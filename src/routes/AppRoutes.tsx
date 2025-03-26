@@ -8,7 +8,7 @@ export const AppRoutes = () => {
     <Routes>
       <Route element={<Layout />}>
         <Route path="/" element={<Home />} />
-        <Route path="/create-story" element={<CreateStory />} />
+        <Route path="/create-campaign" element={<CreateStory />} />
         {/* <Route path="*" element={<NotFound />} /> */}
       </Route>
     </Routes>

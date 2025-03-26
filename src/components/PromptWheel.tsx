@@ -6,76 +6,158 @@ export interface Prompt {
   hint: string;
 }
 
-export const genrePrompts = {
-  "Sci-Fi": [
+// Restructured as sections for D&D campaign creation instead of genres
+export const campaignSections = {
+  "World Building": [
     {
-      id: "characterName",
-      question: "What is your character's name?",
-      hint: 'Give your sci-fi protagonist a memorable name. For example: "Dr. Elara Nova" or "Commander Zephyr Vex"',
+      id: "coreConflict",
+      question: "What's the core conflict or central tension driving this world?",
+      hint: 'Describe the primary conflict that shapes your world. For example: "An ancient evil awakening" or "War between rival kingdoms"',
     },
     {
-      id: "characterDetails",
-      question: "What are some key details about your character?",
-      hint: 'Share defining traits, background, or characteristics. For example: "A reclusive xenobiologist with cybernetic enhancements who grew up on a mining colony"',
+      id: "environments",
+      question: "What mix of environments do you want?",
+      hint: 'Specify the environments your campaign will include. For example: "Urban cities, dense forests, and ancient ruins" or "Desert wasteland and underground caverns"',
     },
     {
-      id: "setting",
-      question: "Where does your character's story take place?",
-      hint: 'Think of futuristic or technological settings. For example: "A space station orbiting a dying star"',
+      id: "culturalInspiration",
+      question: "Which historical period or cultural inspiration would serve as your primary influence?",
+      hint: 'Specify a time period or culture. For example: "Medieval Europe" or "Ancient Egypt" or "Viking Age Scandinavia"',
     },
     {
-      id: "ability",
-      question: "Describe your character's unique technological ability",
-      hint: 'Think about how they interact with technology in a special way. For example: "I can mentally connect to any computer system I touch"',
+      id: "magicLevel",
+      question: "What level of magic exists in this world?",
+      hint: 'Describe how common or rare magic is. For example: "High magic with spellcasters in every town" or "Low magic where spells are rare and feared"',
     },
     {
-      id: "discovery",
-      question: "What scientific discovery changed your character's life?",
-      hint: 'Consider both personal and global impact. For example: "The discovery of ancient alien technology beneath my family\'s research facility"',
-    },
-    {
-      id: "fear",
-      question: "What terrifies your character about the future?",
-      hint: 'Think about technological consequences. For example: "The AI we created becoming too powerful to control"',
+      id: "technologyLevel",
+      question: "What technological level exists alongside magic?",
+      hint: 'Describe the technology level. For example: "Medieval with simple machines" or "Renaissance with early firearms" or "Steampunk with magic-powered devices"',
     },
   ],
-  Adventure: [
+  "Campaign Structure": [
     {
-      id: "adventure",
-      question: "What exciting journey is your character about to embark on?",
-      hint: 'Think of thrilling expeditions or quests. For example: "A treacherous climb to the peak of an unexplored mountain"',
+      id: "levelRange",
+      question: "What level range should this campaign cover?",
+      hint: 'Specify the starting and ending levels. For example: "1-5" or "5-10" or "1-20 for a full campaign"',
+    },
+    {
+      id: "storyArcs",
+      question: "How many major story arcs would you like?",
+      hint: 'Choose the number of major plot arcs. For example: "One epic storyline" or "Three interconnected arcs" or "Five milestone adventures"',
+    },
+    {
+      id: "campaignLength",
+      question: "What campaign length are you aiming for?",
+      hint: 'Estimate the campaign duration. For example: "Short (5-10 sessions)" or "Medium (10-25 sessions)" or "Long (25+ sessions)"',
+    },
+    {
+      id: "structure",
+      question: "How linear vs. sandbox should the story structure be?",
+      hint: 'Describe the narrative structure. For example: "Highly linear with clear objectives" or "Open sandbox with multiple paths" or "Guided sandbox with a central plot but freedom to explore"',
+    },
+    {
+      id: "partyMotivation",
+      question: "What's the primary motivation keeping the party together?",
+      hint: 'Explain why the characters stay as a group. For example: "Shared goal of defeating a villain" or "All members of the same organization" or "Bound by a magical contract"',
     },
   ],
-  Mystery: [
+  "Tone & Themes": [
     {
-      id: "mystery",
-      question: "What perplexing case does your detective need to solve?",
-      hint: 'Consider intriguing and puzzling scenarios. For example: "The disappearance of a famous artifact from a locked museum"',
+      id: "emotionalTone",
+      question: "What emotional tone do you want?",
+      hint: 'Describe the overall mood. For example: "Dark and gritty" or "Heroic high fantasy" or "Humorous adventure" or "Mysterious and tense"',
+    },
+    {
+      id: "coreThemes",
+      question: "What core themes would you like to explore?",
+      hint: 'List 2-3 themes to explore. For example: "Redemption, sacrifice, power" or "Freedom, responsibility, corruption" or "Faith, doubt, perseverance"',
+    },
+    {
+      id: "otherGenres",
+      question: "Which genres besides fantasy would you like to incorporate?",
+      hint: 'Mention other genres to blend in. For example: "Horror elements" or "Mystery and intrigue" or "Political thriller" or "None, pure fantasy"',
+    },
+    {
+      id: "moralChoices",
+      question: "What kinds of moral choices should players face?",
+      hint: 'Describe moral dilemmas. For example: "Greater good vs. individual needs" or "Honor vs. practical necessity" or "Justice vs. mercy"',
     },
   ],
-  "Fairy Tale": [
+  "Player Experience": [
     {
-      id: "fairytale",
-      question: "In what magical realm does your story unfold?",
-      hint: 'Imagine enchanted forests, mystical kingdoms, or whimsical villages. For example: "A hidden valley where animals can talk and trees whisper secrets"',
+      id: "gameplayBalance",
+      question: "What balance of combat/exploration/social interaction do you prefer?",
+      hint: 'Specify your preferred gameplay mix. For example: "Combat-heavy (60/20/20)" or "Balanced (40/30/30)" or "Social-focused (20/20/60)"',
+    },
+    {
+      id: "characterClasses",
+      question: "Which character classes or builds do you want to particularly shine?",
+      hint: 'List classes you want to highlight. For example: "Rogues and bards for a heist campaign" or "Paladins and clerics for an undead-focused adventure" or "All classes equally"',
+    },
+    {
+      id: "rewards",
+      question: "What distinctive rewards beyond standard treasure would you like to offer?",
+      hint: 'Describe special rewards. For example: "Political influence" or "Rare magic items with story significance" or "Property and followers" or "Divine blessings"',
+    },
+    {
+      id: "backgrounds",
+      question: "What player backgrounds would connect well to this campaign?",
+      hint: 'Suggest relevant character backgrounds. For example: "Soldier, Noble, and Sage for a war campaign" or "Criminal, Urchin, and Charlatan for an urban adventure"',
+    },
+  ],
+  "Practical DMing Support": [
+    {
+      id: "challengingEncounters",
+      question: "What encounter types do you struggle to design?",
+      hint: 'Mention encounter types you find difficult. For example: "Naval battles" or "Large-scale war" or "Social encounters with political intrigue" or "Puzzles and riddles"',
+    },
+    {
+      id: "npcDevelopment",
+      question: "Which NPCs would benefit from deeper development?",
+      hint: 'Describe NPCs needing development. For example: "The main villain" or "Recurring allies" or "Political figures" or "Quest givers"',
+    },
+    {
+      id: "locations",
+      question: "What locations would you like detailed maps for?",
+      hint: "List location types needing maps. For example: \"Main city hub\" or \"Villain's fortress\" or \"Ancient temple\" or \"Wilderness regions\"",
+    },
+    {
+      id: "villains",
+      question: "What recurring villains or factions should be fleshed out?",
+      hint: 'Describe antagonists needing detail. For example: "The main villain and their lieutenants" or "Rival adventuring party" or "Corrupt noble house" or "Cult of the ancient god"',
+    },
+    {
+      id: "contingencies",
+      question: "What plot complications could arise if players go off-track?",
+      hint: 'Describe possible diversions. For example: "Alternative paths to the main objective" or "Side quests that connect back to the main plot" or "Consequences of avoiding key encounters"',
     },
   ],
 } as const;
 
 interface PromptWheelProps {
-  genre: keyof typeof genrePrompts;
+  section: keyof typeof campaignSections;
   onAnswersUpdate?: (answers: Record<string, string>) => void;
+  onSectionComplete?: (section: keyof typeof campaignSections) => void;
+  initialAnswers?: Record<string, string>;
 }
 
-const PromptWheel = ({ genre, onAnswersUpdate }: PromptWheelProps) => {
-  const prompts = genrePrompts[genre]
+const PromptWheel = ({ section, onAnswersUpdate, onSectionComplete, initialAnswers = {} }: PromptWheelProps) => {
+  const prompts = campaignSections[section]
   const [currentPromptIndex, setCurrentPromptIndex] = useState(0)
-  const [answers, setAnswers] = useState<Record<string, string>>({})
+  const [answers, setAnswers] = useState<Record<string, string>>(initialAnswers)
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null)
 
   const handleNext = () => {
     if (answers[prompts[currentPromptIndex].id]?.trim()) {
-      setCurrentPromptIndex((prev) => Math.min(prev + 1, prompts.length - 1))
+      if (currentPromptIndex === prompts.length - 1) {
+        // Last prompt in this section
+        if (onSectionComplete) {
+          onSectionComplete(section);
+        }
+      } else {
+        setCurrentPromptIndex((prev) => Math.min(prev + 1, prompts.length - 1))
+      }
     }
   }
 
@@ -138,7 +220,7 @@ const PromptWheel = ({ genre, onAnswersUpdate }: PromptWheelProps) => {
           {position < 0 ? (
             <div>
               <h3 className="text-sm font-medium text-indigo-800 mb-2">{prompt.question}</h3>
-              <p className="text-indigo-600">{answers[prompt.id]}</p>
+              <p className="text-indigo-600">{answers[prompt.id] || ""}</p>
             </div>
           ) : (
             <div>
@@ -181,7 +263,7 @@ const PromptWheel = ({ genre, onAnswersUpdate }: PromptWheelProps) => {
                             : "bg-indigo-300 text-indigo-100"
                         } transition-colors duration-200`}
                     >
-                      {currentPromptIndex === prompts.length - 1 ? "Complete" : "Next"}
+                      {currentPromptIndex === prompts.length - 1 ? "Complete Section" : "Next"}
                     </button>
                   </div>
                 </>
@@ -193,17 +275,14 @@ const PromptWheel = ({ genre, onAnswersUpdate }: PromptWheelProps) => {
     )
   }
 
-  if (currentPromptIndex >= prompts.length) {
-    return (
-      <div className="text-center p-8">
-        <h2 className="text-2xl font-bold text-indigo-900 mb-4">All prompts completed!</h2>
-        <pre className="text-left bg-indigo-50 p-4 rounded-lg">{JSON.stringify(answers, null, 2)}</pre>
-      </div>
-    )
-  }
-
   return (
     <div className="min-h-[calc(100vh-4rem)] p-8 bg-gradient-to-b from-indigo-50 to-white">
+      {/* Section header */}
+      <div className="text-center mb-8">
+        <h2 className="text-2xl font-bold text-indigo-900">{section}</h2>
+        <p className="text-indigo-600">Complete this section to build your campaign</p>
+      </div>
+      
       <div className="relative pt-16 max-w-4xl mx-auto">
         {/* Vertical progress indicator */}
         <div className="fixed left-8 top-24 bottom-24 flex flex-col items-center justify-between">

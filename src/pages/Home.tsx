@@ -1,6 +1,5 @@
-
 import { Button } from "@/components/ui/button";
-import { BookOpen, Sparkles, Target } from "lucide-react";
+import { BookOpen, Sparkles, Target, Sword, Shield, Map } from "lucide-react";
 import { useNavigate, Link } from "react-router";
 import landingBackground from '@/images/landing-background.jpg';
 
@@ -31,78 +30,83 @@ export const Home = () => {
           <section className="py-16 sm:py-24 text-center">
             <div className="max-w-3xl mx-auto space-y-8">
               <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-primary leading-tight">
-                Create Magical Stories in Minutes
+                Create Epic D&D Campaigns in Minutes
               </h1>
               <p className="text-xl text-primary/80 max-w-2xl mx-auto backdrop-blur-sm bg-white/30 rounded-lg p-4">
-                Transform your ideas into captivating tales with our AI-powered story generator. Choose your genre,
-                answer a few prompts, and watch your story come to life with beautifully crafted illustrations.
+                Transform your ideas into captivating campaigns with our AI-powered D&D campaign generator. 
+                Answer a few questions about your world, and watch a complete campaign outline come to life.
               </p>
               <div className="pt-4 relative">
-                <div className="absolute inset-0 bg-gradient-to-r from-indigo-900 to-indigo-500 opacity-50 blur-xl"></div>
-                <Link to="/create-story">
-                  <Button className="bg-gradient-to-r from-indigo-900 to-red-500 hover:from-indigo-800 hover:to-indigo-400 text-white px-8 py-6 text-lg rounded-full shadow-lg hover:shadow-xl transition-all duration-300 ease-in-out transform hover:-translate-y-1 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-background">
-                    Start Your Story
-                  </Button>
-                </Link>
+                <Button className="text-lg px-8 py-6 bg-primary text-white hover:bg-primary/90" asChild>
+                  <Link to="/create-campaign">
+                    <Sword className="mr-2 h-5 w-5" />
+                    Build Your Campaign
+                  </Link>
+                </Button>
               </div>
             </div>
           </section>
 
-          {/* How It Works Section */}
-          <section className="py-16 sm:py-24">
+          {/* Features */}
+          <section className="py-12 sm:py-16">
             <div className="text-center mb-16">
-              <h2 className="text-3xl sm:text-4xl font-bold text-primary mb-4">How It Works</h2>
-              <p className="text-xl text-primary/80">Create your story in three simple steps</p>
+              <h2 className="text-3xl font-bold text-primary">How It Works</h2>
+              <p className="text-xl text-primary/80 max-w-2xl mx-auto mt-4">
+                Our campaign generator makes it easy to build a complete D&D adventure in just a few steps.
+              </p>
             </div>
 
-            <div className="grid md:grid-cols-3 gap-12">
-              {[
-                {
-                  icon: Target,
-                  title: "1. Choose Your Genre",
-                  description: "Select from science fiction, mystery, fairy tale, or adventure.",
-                },
-                {
-                  icon: Sparkles,
-                  title: "2. Answer Prompts",
-                  description: "Tell us about your character and their world through guided questions.",
-                },
-                {
-                  icon: BookOpen,
-                  title: "3. Generate Story",
-                  description: "Watch as your inputs transform into a complete illustrated story.",
-                },
-              ].map((item, index) => (
-                <div
-                  key={index}
-                  className="text-center space-y-4 p-6 bg-white/80 backdrop-blur-sm rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 ease-in-out transform hover:-translate-y-1"
-                >
-                  <div className="h-16 w-16 rounded-full bg-gradient-to-br from-indigo-900 to-indigo-500 flex items-center justify-center mx-auto">
-                    <item.icon className="h-8 w-8 text-white" />
-                  </div>
-                  <h3 className="text-xl font-semibold text-primary">{item.title}</h3>
-                  <p className="text-primary/80">{item.description}</p>
+            <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+              {/* Feature 1 */}
+              <div className="bg-white/80 backdrop-blur-sm rounded-xl p-6 shadow-lg">
+                <div className="bg-primary/10 rounded-full w-12 h-12 flex items-center justify-center mb-4">
+                  <Map className="h-6 w-6 text-primary" />
                 </div>
-              ))}
+                <h3 className="text-xl font-semibold text-primary mb-2">World Building</h3>
+                <p className="text-primary/80">
+                  Define your world's core conflicts, environments, and magic levels to create a rich foundation.
+                </p>
+              </div>
+
+              {/* Feature 2 */}
+              <div className="bg-white/80 backdrop-blur-sm rounded-xl p-6 shadow-lg">
+                <div className="bg-primary/10 rounded-full w-12 h-12 flex items-center justify-center mb-4">
+                  <BookOpen className="h-6 w-6 text-primary" />
+                </div>
+                <h3 className="text-xl font-semibold text-primary mb-2">Campaign Structure</h3>
+                <p className="text-primary/80">
+                  Set up your campaign's level range, story arcs, and decide how linear or sandbox it should be.
+                </p>
+              </div>
+
+              {/* Feature 3 */}
+              <div className="bg-white/80 backdrop-blur-sm rounded-xl p-6 shadow-lg">
+                <div className="bg-primary/10 rounded-full w-12 h-12 flex items-center justify-center mb-4">
+                  <Shield className="h-6 w-6 text-primary" />
+                </div>
+                <h3 className="text-xl font-semibold text-primary mb-2">Complete Package</h3>
+                <p className="text-primary/80">
+                  Get NPCs, locations, encounters, and plot hooks ready to use in your next D&D session.
+                </p>
+              </div>
             </div>
           </section>
 
-          {/* <section className="py-16 sm:py-24">
-            <div className="bg-white bg-opacity-70 backdrop-filter backdrop-blur-xl rounded-2xl p-8 sm:p-12 text-center shadow-xl">
-              <h2 className="text-3xl sm:text-4xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-indigo-900 to-indigo-500">
-                Ready to Write Your Story?
-              </h2>
-              <p className="text-xl text-primary/80">
-                Start creating your story now and bring your imagination to life.
+          {/* CTA */}
+          <section className="py-16 text-center">
+            <div className="max-w-3xl mx-auto">
+              <h2 className="text-3xl font-bold text-primary mb-4">Ready to Begin Your Adventure?</h2>
+              <p className="text-xl text-primary/80 mb-8">
+                Join thousands of Dungeon Masters who have created unforgettable campaigns with our tool.
               </p>
-              <Button
-                size="lg"
-                className="bg-gradient-to-r from-indigo-900 to-indigo-500 hover:from-indigo-800 hover:to-indigo-400 text-white px-8 py-6 text-lg shadow-lg hover:shadow-xl transition-all duration-300 ease-in-out transform hover:-translate-y-1"
-              >
-                Start Creating Now
+              <Button className="text-lg px-8 py-6 bg-primary text-white hover:bg-primary/90" asChild>
+                <Link to="/create-campaign">
+                  <Sparkles className="mr-2 h-5 w-5" />
+                  Generate Your Campaign
+                </Link>
               </Button>
             </div>
-          </section> */}
+          </section>
         </div>
 
         {/* Footer */}
@@ -113,5 +117,5 @@ export const Home = () => {
         </footer>
       </div>
     </main>
-)
+  );
 };

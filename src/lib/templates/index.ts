@@ -4,11 +4,13 @@
  */
 
 import { SciFiPromptAnswers, generateSciFiTemplate } from './scifi';
+import { DndCampaignAnswers, generateDndCampaignTemplate } from './dnd';
 
-export type { SciFiPromptAnswers };
+export type { SciFiPromptAnswers, DndCampaignAnswers };
 
 export interface TemplateMap {
   'Sci-Fi': (answers: SciFiPromptAnswers) => string;
+  'D&D Campaign': (answers: DndCampaignAnswers) => string;
   // We'll add other genres here in the future
   // Adventure: (answers: AdventurePromptAnswers) => string;
   // Mystery: (answers: MysteryPromptAnswers) => string;
@@ -20,6 +22,7 @@ export interface TemplateMap {
  */
 export const templates: TemplateMap = {
   'Sci-Fi': generateSciFiTemplate,
+  'D&D Campaign': generateDndCampaignTemplate,
   // Add other genre templates as they are created
 };
 

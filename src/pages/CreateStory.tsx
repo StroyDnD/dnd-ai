@@ -1,78 +1,138 @@
 import { useState, useEffect } from "react";
 import PromptWheel from "@/components/PromptWheel";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Loader } from "lucide-react";
-import { genrePrompts } from "@/components/PromptWheel";
+import { ArrowRight, Loader, Check } from "lucide-react";
+import { campaignSections } from "@/components/PromptWheel";
 import createStoryBackground from "@/images/create-story-bg.jpg";
 import { StoryService } from "@/lib/api";
-import { SciFiPromptAnswers } from "@/lib/templates";
+import { DndCampaignAnswers } from "@/lib/templates";
 import { cn } from "@/lib/utils";
+import { config, testDndCampaignAnswers } from "@/lib/config";
 
-const genres = ["Adventure", "Sci-Fi", "Mystery", "Fairy Tale"] as const;
-type Genre = keyof typeof genrePrompts;
+// Define all sections in order
+const sections = [
+  "World Building", 
+  "Campaign Structure", 
+  "Tone & Themes", 
+  "Player Experience", 
+  "Practical DMing Support"
+] as const;
+type CampaignSection = keyof typeof campaignSections;
 
 export default function CreateStory() {
-  const [selectedGenre, setSelectedGenre] = useState<Genre>("Sci-Fi");
-  const [answers, setAnswers] = useState<Record<string, string>>({});
+  const [currentSection, setCurrentSection] = useState<CampaignSection>("World Building");
+  const [allAnswers, setAllAnswers] = useState<Record<string, string>>({});
+  const [completedSections, setCompletedSections] = useState<CampaignSection[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
-  const [generatedStory, setGeneratedStory] = useState<{ title: string; content: string } | null>(null);
+  const [generatedCampaign, setGeneratedCampaign] = useState<{ title: string; content: string } | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [showGenerateButton, setShowGenerateButton] = useState(false);
+  const [showGenerateButton, setShowGenerateButton] = useState(config.testMode ? true : false);
 
-  const handleAnswersUpdate = (updatedAnswers: Record<string, string>) => {
-    setAnswers(updatedAnswers);
+  const handleAnswersUpdate = (sectionAnswers: Record<string, string>) => {
+    setAllAnswers(prev => ({
+      ...prev,
+      ...sectionAnswers
+    }));
   };
 
-  const promptsForGenre = genrePrompts[selectedGenre] || [];
-  const isAllPromptsAnswered = promptsForGenre.every(prompt => 
-    answers[prompt.id] && answers[prompt.id].trim().length > 0
-  );
+  const handleSectionComplete = (section: CampaignSection) => {
+    if (!completedSections.includes(section)) {
+      setCompletedSections(prev => [...prev, section]);
+    }
+    
+    // Move to next section
+    const currentIndex = sections.indexOf(section);
+    if (currentIndex < sections.length - 1) {
+      setCurrentSection(sections[currentIndex + 1]);
+    }
+  };
 
-  // Update button visibility when all prompts are answered
+  // Show generate button when all sections are completed or in test mode
   useEffect(() => {
-    setShowGenerateButton(isAllPromptsAnswered);
-  }, [isAllPromptsAnswered]);
+    const allSectionsCompleted = sections.every(section => 
+      completedSections.includes(section)
+    );
+    setShowGenerateButton(config.testMode || allSectionsCompleted);
+  }, [completedSections]);
 
-  const handleGenerateStory = async () => {
+
+  const handleGenerateCampaign = async () => {
+    if (isGenerating) return; // Prevent multiple clicks
+    
     try {
       setIsGenerating(true);
       setError(null);
-      
-      // Only handle Sci-Fi for now, as per the requirements
-      if (selectedGenre === "Sci-Fi") {
-        const sciFiAnswers: SciFiPromptAnswers = {
-          setting: answers.setting || "",
-          ability: answers.ability || "",
-          discovery: answers.discovery || "",
-          fear: answers.fear || "",
-          characterName: answers.characterName || "",
-          characterDetails: answers.characterDetails || "",
-        };
+
+      // In test mode, use the predefined answers
+      if (config.testMode) {
+        console.log("generating test campaign");
+        const result = await StoryService.generateDndCampaign(testDndCampaignAnswers);
         
-        const result = await StoryService.generateSciFiStory(sciFiAnswers);
-        
-        setGeneratedStory({
-          title: result.title || "Untitled SciFi Story",
+        setGeneratedCampaign({
+          title: result.title || "D&D Campaign",
           content: result.story,
         });
       } else {
-        // For future implementation of other genres
-        setError("Only Sci-Fi genre is currently supported.");
+        // Extract theme values and convert to array
+        const themesArray = allAnswers.coreThemes ? 
+          allAnswers.coreThemes.split(',').map(theme => theme.trim()) :
+          [];
+        
+        // Create campaign answers object from all collected answers
+        const dndAnswers: DndCampaignAnswers = {
+          // Campaign Structure section
+          levelRange: allAnswers.levelRange || "",
+          campaignLength: allAnswers.campaignLength || "",
+          // World Building section
+          setting: `${allAnswers.culturalInspiration || ""} with ${allAnswers.environments || ""}. Magic: ${allAnswers.magicLevel || ""}. Tech: ${allAnswers.technologyLevel || ""}`,
+          // Tone & Themes section 
+          themes: themesArray,
+          // Additional context
+          coreConflict: allAnswers.coreConflict || "",
+          storyArcs: allAnswers.storyArcs || "",
+          structure: allAnswers.structure || "",
+          emotionalTone: allAnswers.emotionalTone || "",
+          partyMotivation: allAnswers.partyMotivation || "",
+          otherGenres: allAnswers.otherGenres || "",
+          moralChoices: allAnswers.moralChoices || "",
+          gameplayBalance: allAnswers.gameplayBalance || "",
+          characterClasses: allAnswers.characterClasses || "",
+          backgrounds: allAnswers.backgrounds || "",
+          rewards: allAnswers.rewards || "",
+          // DMing support
+          challengingEncounters: allAnswers.challengingEncounters || "",
+          npcDevelopment: allAnswers.npcDevelopment || "",
+          locations: allAnswers.locations || "",
+          villains: allAnswers.villains || "",
+          contingencies: allAnswers.contingencies || "",
+        };
+        
+        const result = await StoryService.generateDndCampaign(dndAnswers);
+        
+        setGeneratedCampaign({
+          title: result.title || "D&D Campaign",
+          content: result.story,
+        });
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to generate story.");
-      console.error("Story generation error:", err);
+      setError(err instanceof Error ? err.message : "Failed to generate campaign.");
+      console.error("Campaign generation error:", err);
     } finally {
       setIsGenerating(false);
     }
   };
 
-  const handleReturnToPrompts = () => {
-    setGeneratedStory(null);
+  const handleNavigateToSection = (section: CampaignSection) => {
+    if (isGenerating) return; // Prevent navigation while generating
+    setCurrentSection(section);
   };
 
-  // Display the generated story if available
-  if (generatedStory) {
+  const handleReturnToQuestions = () => {
+    setGeneratedCampaign(null);
+  };
+
+  // Display the generated campaign if available
+  if (generatedCampaign) {
     return (
       <div className="min-h-screen pt-16 p-4 md:p-8">
         <div className="max-w-4xl mx-auto">
@@ -80,20 +140,20 @@ export default function CreateStory() {
             <div className="p-6 md:p-8">
               <Button 
                 variant="outline" 
-                onClick={handleReturnToPrompts}
+                onClick={handleReturnToQuestions}
                 className="mb-4"
               >
-                ← Back to Prompts
+                ← Back to Questions
               </Button>
               
               <h1 className="text-2xl md:text-3xl font-bold mb-6 text-center text-indigo-900">
-                {generatedStory.title}
+                {generatedCampaign.title}
               </h1>
               
               <div className="prose prose-indigo max-w-none">
-                {generatedStory.content.split('\n').map((paragraph, idx) => {
+                {generatedCampaign.content.split('\n').map((paragraph, idx) => {
                   // Skip the title which is already displayed above
-                  if (idx === 0 && paragraph.trim() === generatedStory.title) {
+                  if (idx === 0 && paragraph.trim() === generatedCampaign.title) {
                     return null;
                   }
                   return paragraph.trim() ? (
@@ -112,18 +172,34 @@ export default function CreateStory() {
 
   return (
     <div className="min-h-screen">
+      {/* Loading overlay */}
+      {isGenerating && (
+        <div className="fixed inset-0 bg-black/50 z-[100] flex items-center justify-center">
+          <div className="bg-white p-6 rounded-lg shadow-xl text-center">
+            <Loader className="h-10 w-10 animate-spin mx-auto mb-4 text-indigo-600" />
+            <p className="text-lg font-medium">
+              {config.testMode ? "Generating Test Campaign..." : "Generating your campaign..."}
+            </p>
+            <p className="text-sm text-gray-500 mt-2">This may take a moment</p>
+          </div>
+        </div>
+      )}
+      
       {/* Fixed top toolbar */}
       <div className="fixed top-0 left-0 right-0 bg-white shadow-md z-50">
         <div className="max-w-4xl mx-auto p-4 flex items-center justify-between">
-          <div className="flex space-x-2">
-            {genres.map((genre) => (
+          <div className="flex overflow-x-auto py-2 gap-2">
+            {sections.map((section) => (
               <Button
-                key={genre}
-                onClick={() => setSelectedGenre(genre as Genre)}
-                variant={selectedGenre === genre ? "default" : "outline"}
-                className="rounded-full"
+                key={section}
+                onClick={() => handleNavigateToSection(section)}
+                variant={currentSection === section ? "default" : completedSections.includes(section) ? "outline" : "ghost"}
+                className="rounded-full whitespace-nowrap flex items-center gap-1"
+                size="sm"
+                disabled={isGenerating} // Disable navigation buttons while generating
               >
-                {genre}
+                {completedSections.includes(section) && <Check className="h-3 w-3" />}
+                {section}
               </Button>
             ))}
           </div>
@@ -141,9 +217,6 @@ export default function CreateStory() {
               loading="eager"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-white via-transparent to-transparent" />
-            {/* still playing with the gradients here */}
-            {/* <div className="absolute inset-0 bg-gradient-to-b from-white via-transparent to-transparent" /> */}
-            {/* <div className="absolute inset-0 bg-gradient-to-l from-white via-transparent to-transparent" /> */}
             <div className="absolute inset-0 bg-gradient-to-r from-white via-transparent to-transparent" />
           </div>
         </div>
@@ -156,12 +229,17 @@ export default function CreateStory() {
           </div>
         )}
         
-        <PromptWheel 
-          genre={selectedGenre} 
-          onAnswersUpdate={handleAnswersUpdate}
-        />
+        {/* Add pointer-events-none to disable interaction with PromptWheel during generation */}
+        <div className={isGenerating ? "pointer-events-none" : ""}>
+          <PromptWheel 
+            section={currentSection}
+            onAnswersUpdate={handleAnswersUpdate}
+            onSectionComplete={handleSectionComplete}
+            initialAnswers={allAnswers}
+          />
+        </div>
         
-        {/* Floating Generate Story button that appears when all prompts are answered */}
+        {/* Floating Generate Campaign button that appears when all sections are completed or in test mode */}
         <div 
           className={cn(
             "fixed right-40 bottom-1/4 transform -translate-y-1/2 z-50 transition-all duration-300",
@@ -169,19 +247,23 @@ export default function CreateStory() {
           )}
         >
           <Button 
-            className="px-6 py-6 text-lg rounded-full bg-gradient-to-r from-indigo-700 to-indigo-400 border border-white shadow-lg hover:shadow-xl transition-all text-white
-            hover:scale-110 hover:shadow-[0_0_20px_rgba(99,102,241,0.7)] hover:border-opacity-80 transform transition-transform duration-300"
-            onClick={handleGenerateStory}
+            className={cn(
+              "px-6 py-6 text-lg rounded-full border border-white shadow-lg hover:shadow-xl transition-all text-white",
+              "hover:scale-110 hover:shadow-[0_0_20px_rgba(99,102,241,0.7)] hover:border-opacity-80 transform transition-transform duration-300",
+              isGenerating ? "bg-gradient-to-r from-indigo-600 to-indigo-400 cursor-not-allowed opacity-80" : "bg-gradient-to-r from-indigo-700 to-indigo-400"
+            )}
+            onClick={handleGenerateCampaign}
             disabled={isGenerating}
             size="lg"
           >
             {isGenerating ? (
               <>
-                <Loader className="mr-3 h-5 w-5 animate-spin" /> Generating...
+                <Loader className="mr-3 h-5 w-5 animate-spin" /> 
+                {config.testMode ? "Generating Test Campaign..." : "Generating..."}
               </>
             ) : (
               <>
-                Generate Story <ArrowRight className="ml-3 h-5 w-5" />
+                {config.testMode ? "Generate Test Campaign!!" : "Generate Campaign"} <ArrowRight className="ml-3 h-5 w-5" />
               </>
             )}
           </Button>

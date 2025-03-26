@@ -6,6 +6,7 @@
 import OpenAIService from './openai';
 import { generateTemplate, TemplateMap } from '../templates';
 import { SciFiPromptAnswers } from '../templates/scifi';
+import { DndCampaignAnswers } from '../templates/dnd';
 
 export interface StoryGenerationInput {
   genre: keyof TemplateMap;
@@ -54,6 +55,16 @@ export default class StoryService {
   static async generateSciFiStory(answers: SciFiPromptAnswers): Promise<StoryGenerationResult> {
     return this.generateStory({
       genre: 'Sci-Fi',
+      answers,
+    });
+  }
+
+  /**
+   * Method for D&D campaign generation with strong typing
+   */
+  static async generateDndCampaign(answers: DndCampaignAnswers): Promise<StoryGenerationResult> {
+    return this.generateStory({
+      genre: 'D&D Campaign',
       answers,
     });
   }
