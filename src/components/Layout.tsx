@@ -7,9 +7,6 @@ export const Layout = () => {
       <main className="">
         <Outlet />
       </main>
-      <footer className="">
-        <p>© 2025 Story AI</p>
-      </footer>
     </div>
   );
 };
