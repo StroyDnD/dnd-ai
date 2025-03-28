@@ -1,8 +1,14 @@
+@import url('https://fonts.googleapis.com/css2?family=Signika:wght@400;600;700&display=swap');
+
 @import "tailwindcss";
 
 @plugin "tailwindcss-animate";
 
 @custom-variant dark (&:is(.dark *));
+
+@theme {
+  --font-testingg: 'Signika', sans-serif;
+}
 
 :root {
   --border: 214.3 31.8% 91.4%;

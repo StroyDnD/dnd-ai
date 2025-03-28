@@ -22,7 +22,7 @@ export const Home = () => {
 
           {/* Hero Section */}
           <section className="pt-32 pb-20 text-center">
-            <h1 className="text-5xl md:text-6xl font-bold leading-tight drop-shadow-md">
+            <h1 className="text-5xl md:text-6xl font-bold leading-tight drop-shadow-md font-testingg">
               Create Epic D&D <br />
               <span className="text-yellow-300">Campaigns in Minutes</span>
             </h1>
