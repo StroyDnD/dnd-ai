@@ -3,7 +3,7 @@ import PromptWheel from "@/components/PromptWheel";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Loader, Check } from "lucide-react";
 import { campaignSections } from "@/components/PromptWheel";
-import createStoryBackground from "@/images/create-story-bg.jpg";
+import createCampaignBackground from "@/images/create-campaign-bg.png";
 import { StoryService } from "@/lib/api";
 import { DndCampaignAnswers } from "@/lib/templates";
 import { cn } from "@/lib/utils";
@@ -134,34 +134,47 @@ export default function CreateStory() {
   // Display the generated campaign if available
   if (generatedCampaign) {
     return (
-      <div className="min-h-screen pt-16 p-4 md:p-8">
-        <div className="max-w-4xl mx-auto">
-          <div className="bg-white shadow-lg rounded-lg overflow-hidden">
-            <div className="p-6 md:p-8">
-              <Button 
-                variant="outline" 
-                onClick={handleReturnToQuestions}
-                className="mb-4"
-              >
-                ← Back to Questions
-              </Button>
-              
-              <h1 className="text-2xl md:text-3xl font-bold mb-6 text-center text-indigo-900">
-                {generatedCampaign.title}
-              </h1>
-              
-              <div className="prose prose-indigo max-w-none">
-                {generatedCampaign.content.split('\n').map((paragraph, idx) => {
-                  // Skip the title which is already displayed above
-                  if (idx === 0 && paragraph.trim() === generatedCampaign.title) {
-                    return null;
-                  }
-                  return paragraph.trim() ? (
-                    <p key={idx} className="mb-4">{paragraph}</p>
-                  ) : (
-                    <br key={idx} />
-                  );
-                })}
+      <div className="min-h-screen relative">
+        <div className="absolute inset-0 z-0">
+          <img
+            src={createCampaignBackground}
+            alt="Hero background"
+            className="object-cover w-full h-full object-center fixed inset-0"
+            loading="eager"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-white/30 via-transparent to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-r from-white/30 via-transparent to-transparent" />
+        </div>
+        
+        <div className="relative z-10 pt-16 p-4 md:p-8">
+          <div className="max-w-4xl mx-auto">
+            <div className="bg-white/95 backdrop-blur-sm shadow-lg rounded-lg overflow-hidden">
+              <div className="p-6 md:p-8">
+                <Button 
+                  variant="outline" 
+                  onClick={handleReturnToQuestions}
+                  className="mb-4"
+                >
+                  ← Back to Questions
+                </Button>
+                
+                <h1 className="text-2xl md:text-3xl font-bold mb-6 text-center text-indigo-900">
+                  {generatedCampaign.title}
+                </h1>
+                
+                <div className="prose prose-indigo max-w-none">
+                  {generatedCampaign.content.split('\n').map((paragraph, idx) => {
+                    // Skip the title which is already displayed above
+                    if (idx === 0 && paragraph.trim() === generatedCampaign.title) {
+                      return null;
+                    }
+                    return paragraph.trim() ? (
+                      <p key={idx} className="mb-4">{paragraph}</p>
+                    ) : (
+                      <br key={idx} />
+                    );
+                  })}
+                </div>
               </div>
             </div>
           </div>
@@ -185,44 +198,46 @@ export default function CreateStory() {
         </div>
       )}
       
-      {/* Fixed top toolbar */}
-      <div className="fixed top-0 left-0 right-0 bg-white shadow-md z-50">
-        <div className="max-w-4xl mx-auto p-4 flex items-center justify-between">
-          <div className="flex overflow-x-auto py-2 gap-2">
-            {sections.map((section) => (
-              <Button
-                key={section}
-                onClick={() => handleNavigateToSection(section)}
-                variant={currentSection === section ? "default" : completedSections.includes(section) ? "outline" : "ghost"}
-                className="rounded-full whitespace-nowrap flex items-center gap-1"
-                size="sm"
-                disabled={isGenerating} // Disable navigation buttons while generating
-              >
-                {completedSections.includes(section) && <Check className="h-3 w-3" />}
-                {section}
-              </Button>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* Main content with padding to account for fixed header */}
-      <div className="pt-16">
+      {/* Full-height background */}
+      <div className="relative min-h-screen">
         <div className="absolute inset-0 z-0">
-          <div className="relative w-full h-screen">
-            <img
-              src={createStoryBackground}
-              alt="Hero background"
-              className="object-cover w-full h-full object-center"
-              loading="eager"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-white via-transparent to-transparent" />
-            <div className="absolute inset-0 bg-gradient-to-r from-white via-transparent to-transparent" />
+          <img
+            src={createCampaignBackground}
+            alt="Hero background"
+            className="object-cover w-full h-full object-center fixed inset-0"
+            loading="eager"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-white/30 via-transparent to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-r from-white/30 via-transparent to-transparent" />
+        </div>
+        
+        {/* Section navigation on top of the background */}
+        <div className="relative z-10 pt-4 px-4">
+          <div className="max-w-4xl mx-auto">
+            <div className="flex overflow-x-auto py-2 gap-2 justify-center">
+              {sections.map((section) => (
+                <Button
+                  key={section}
+                  onClick={() => handleNavigateToSection(section)}
+                  variant={currentSection === section ? "default" : completedSections.includes(section) ? "outline" : "ghost"}
+                  className={cn(
+                    "rounded-full whitespace-nowrap flex items-center gap-1",
+                    completedSections.includes(section) ? "bg-opacity-90" : "bg-opacity-80",
+                    currentSection === section ? "bg-indigo-600 text-white" : "bg-white/70 text-indigo-900 backdrop-blur-sm hover:bg-white/80"
+                  )}
+                  size="sm"
+                  disabled={isGenerating}
+                >
+                  {completedSections.includes(section) && <Check className="h-3 w-3" />}
+                  {section}
+                </Button>
+              ))}
+            </div>
           </div>
         </div>
         
         {error && (
-          <div className="max-w-4xl mx-auto px-4 py-2 mt-4">
+          <div className="relative z-10 max-w-4xl mx-auto px-4 py-2 mt-4">
             <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
               <p>{error}</p>
             </div>
@@ -230,7 +245,7 @@ export default function CreateStory() {
         )}
         
         {/* Add pointer-events-none to disable interaction with PromptWheel during generation */}
-        <div className={isGenerating ? "pointer-events-none" : ""}>
+        <div className={cn("relative z-10", isGenerating ? "pointer-events-none" : "")}>
           <PromptWheel 
             section={currentSection}
             onAnswersUpdate={handleAnswersUpdate}
@@ -242,7 +257,7 @@ export default function CreateStory() {
         {/* Floating Generate Campaign button that appears when all sections are completed or in test mode */}
         <div 
           className={cn(
-            "fixed right-40 bottom-1/4 transform -translate-y-1/2 z-50 transition-all duration-300",
+            "fixed right-12 bottom-12 transform z-50 transition-all duration-300",
             showGenerateButton ? "translate-x-0 opacity-100" : "translate-x-20 opacity-0"
           )}
         >
