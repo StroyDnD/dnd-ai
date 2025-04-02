@@ -191,17 +191,17 @@ const PromptWheel = ({ section, onAnswersUpdate, onSectionComplete, initialAnswe
     // Position-based styling
     if (position === 0) {
       containerClass += "transform translate-y-0 scale-100 opacity-100 z-20 "
-      contentClass += "bg-indigo-100 shadow-lg "
+      contentClass += "bg-indigo-100/95 backdrop-blur-sm shadow-lg "
     } else if (position < 0) {
       containerClass += `transform -translate-y-16 scale-90 opacity-50 z-10 `
-      contentClass += "bg-indigo-50 cursor-pointer "
+      contentClass += "bg-indigo-50/90 backdrop-blur-sm cursor-pointer "
 
       if (hoveredIndex === index) {
         contentClass += "ring-2 ring-indigo-400 shadow-lg "
       }
     } else {
       containerClass += `transform translate-y-16 scale-90 opacity-50 z-0 `
-      contentClass += "bg-indigo-50 cursor-pointer "
+      contentClass += "bg-indigo-50/90 backdrop-blur-sm cursor-pointer "
 
       if (hoveredIndex === index) {
         contentClass += "ring-2 ring-indigo-400 shadow-lg "
@@ -276,25 +276,25 @@ const PromptWheel = ({ section, onAnswersUpdate, onSectionComplete, initialAnswe
   }
 
   return (
-    <div className="min-h-[calc(100vh-4rem)] p-8 bg-gradient-to-b from-indigo-50 to-white">
-      {/* Section header */}
-      <div className="text-center mb-8">
+    <div className="min-h-[calc(100vh-4rem)] p-8 flex flex-col items-center">
+      {/* Section header - centered properly */}
+      <div className="text-center mb-8 bg-white/70 backdrop-blur-sm p-4 rounded-lg w-full max-w-2xl">
         <h2 className="text-2xl font-bold text-indigo-900">{section}</h2>
         <p className="text-indigo-600">Complete this section to build your campaign</p>
       </div>
       
-      <div className="relative pt-16 max-w-4xl mx-auto">
+      <div className="relative pt-16 max-w-4xl mx-auto w-full">
         {/* Vertical progress indicator */}
         <div className="fixed left-8 top-24 bottom-24 flex flex-col items-center justify-between">
           {/* Progress text */}
-          <div className="text-sm text-indigo-600 font-medium">
+          <div className="text-sm bg-white/70 backdrop-blur-sm px-3 py-2 rounded-full text-indigo-600 font-medium">
             Question {currentPromptIndex + 1} of {prompts.length}
           </div>
           
           {/* Progress dots and bar container */}
           <div className="flex-1 flex items-center space-x-4 my-8">
             {/* Progress dots */}
-            <div className="flex flex-col space-y-4">
+            <div className="flex flex-col space-y-4 bg-white/30 backdrop-blur-sm p-2 rounded-full">
               {prompts.map((_, index) => (
                 <div
                   key={index}
@@ -306,7 +306,7 @@ const PromptWheel = ({ section, onAnswersUpdate, onSectionComplete, initialAnswe
             </div>
 
             {/* Vertical progress bar */}
-            <div className="h-full w-2 bg-indigo-100 rounded-full overflow-hidden">
+            <div className="h-full w-2 bg-indigo-100/70 backdrop-blur-sm rounded-full overflow-hidden">
               <div
                 className="w-full bg-indigo-600 transition-all duration-500 rounded-full"
                 style={{ 
@@ -319,7 +319,7 @@ const PromptWheel = ({ section, onAnswersUpdate, onSectionComplete, initialAnswe
         </div>
 
         {/* Main content */}
-        <div className="relative mr-48">
+        <div className="relative">
           <div className="relative">
             {prompts.map((prompt, index) => renderPrompt(prompt, index))}
           </div>

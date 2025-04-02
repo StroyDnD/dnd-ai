@@ -1,8 +1,23 @@
+@import url("https://fonts.googleapis.com/css2?family=Signika:wght@400;600;700&display=swap");
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400..900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300..700;1,300..700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=IM+Fell+English+SC&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap');
+
 @import "tailwindcss";
 
 @plugin "tailwindcss-animate";
 
 @custom-variant dark (&:is(.dark *));
+
+@theme {
+  --font-signika: "Signika", sans-serif;
+  --font-cinzel: "Cinzel", serif;
+  --font-cormorant: "Cormorant Garamond", serif;
+  --font-imfell: "IM Fell English SC", serif;
+  --font-playfair: "Playfair Display", serif;
+  --color-title: #FED550;
+}
 
 :root {
   --border: 214.3 31.8% 91.4%;
@@ -25,4 +40,11 @@
   --card: 0 0% 100%;
   --card-foreground: 222.2 84% 4.9%;
   --radius: 0.5rem;
+  --ghibli-gold: #E9C46A;
+  --ghibli-apricot: #F4A261;
+  --ghibli-cream: #FAF3E0;
+  --ghibli-forest: #264653;
+  --ghibli-sunset: #E76F51;
+  --ghibli-brown: #4E342E;
+  --light-green: #8d9d4f;
 }
