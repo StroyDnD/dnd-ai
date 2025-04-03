@@ -228,7 +228,11 @@ export default function CreateStory() {
                   size="sm"
                   disabled={isGenerating}
                 >
-                  {completedSections.includes(section) && <Check className="h-3 w-3" />}
+                  {completedSections.includes(section) && (
+                    <div className="bg-green-500 rounded-full p-0.5 flex items-center justify-center">
+                      <Check className="h-3 w-3 text-white" />
+                    </div>
+                  )}
                   {section}
                 </Button>
               ))}

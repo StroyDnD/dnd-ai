@@ -10,14 +10,14 @@ export interface Prompt {
 export const campaignSections = {
   "World Building": [
     {
-      id: "coreConflict",
-      question: "What's the core conflict or central tension driving this world?",
-      hint: 'Describe the primary conflict that shapes your world. For example: "An ancient evil awakening" or "War between rival kingdoms"',
-    },
-    {
       id: "environments",
       question: "What mix of environments do you want?",
       hint: 'Specify the environments your campaign will include. For example: "Urban cities, dense forests, and ancient ruins" or "Desert wasteland and underground caverns"',
+    },
+    {
+      id: "coreConflict",
+      question: "What's the core conflict or central tension driving this world?",
+      hint: 'Describe the primary conflict that shapes your world. For example: "An ancient evil awakening" or "War between rival kingdoms"',
     },
     {
       id: "culturalInspiration",
@@ -33,6 +33,16 @@ export const campaignSections = {
       id: "technologyLevel",
       question: "What technological level exists alongside magic?",
       hint: 'Describe the technology level. For example: "Medieval with simple machines" or "Renaissance with early firearms" or "Steampunk with magic-powered devices"',
+    },
+    {
+      id: "historyLore",
+      question: "Describe any key historical events or lore you'd like to include.",
+      hint: "E.g., 'Ancient wars', 'legendary heroes', or 'fallen empires'",
+    },
+    {
+      id: "religionsDeities",
+      question: "What religions or deities exist, and how do they influence the world?",
+      hint: "E.g., 'Pantheon of rival gods', 'monotheistic zealots', or 'nature spirits worshipped by druids'",
     },
   ],
   "Campaign Structure": [
@@ -61,6 +71,16 @@ export const campaignSections = {
       question: "What's the primary motivation keeping the party together?",
       hint: 'Explain why the characters stay as a group. For example: "Shared goal of defeating a villain" or "All members of the same organization" or "Bound by a magical contract"',
     },
+    {
+      id: "majorVillain",
+      question: "Who is the main antagonist or villain of your campaign?",
+      hint: "Describe their goals, motivations, and background briefly.",
+    },
+    {
+      id: "criticalEvents",
+      question: "List any critical events or milestones you'd like to see in the campaign.",
+      hint: "E.g., 'Coronation of a king', 'destruction of a city', or 'awakening of a dragon'",
+    },
   ],
   "Tone & Themes": [
     {
@@ -82,6 +102,11 @@ export const campaignSections = {
       id: "moralChoices",
       question: "What kinds of moral choices should players face?",
       hint: 'Describe moral dilemmas. For example: "Greater good vs. individual needs" or "Honor vs. practical necessity" or "Justice vs. mercy"',
+    },
+    {
+      id: "sensitiveContent",
+      question: "Are there any sensitive or mature topics you prefer to avoid?",
+      hint: "E.g., 'Graphic violence', 'political themes', 'religious conflicts'",
     },
   ],
   "Player Experience": [
@@ -105,35 +130,41 @@ export const campaignSections = {
       question: "What player backgrounds would connect well to this campaign?",
       hint: 'Suggest relevant character backgrounds. For example: "Soldier, Noble, and Sage for a war campaign" or "Criminal, Urchin, and Charlatan for an urban adventure"',
     },
+    {
+      id: "characterDeath",
+      question: "How challenging or deadly should this campaign be?",
+      hint: "E.g., 'Player deaths possible', 'difficult but fair', or 'casual, story-focused'",
+    },
   ],
   "Practical DMing Support": [
     {
       id: "challengingEncounters",
       question: "What encounter types do you struggle to design?",
-      hint: 'Mention encounter types you find difficult. For example: "Naval battles" or "Large-scale war" or "Social encounters with political intrigue" or "Puzzles and riddles"',
+      hint: 'E.g., "Naval battles", "Large-scale war", or "Puzzles and riddles"',
     },
     {
       id: "npcDevelopment",
       question: "Which NPCs would benefit from deeper development?",
-      hint: 'Describe NPCs needing development. For example: "The main villain" or "Recurring allies" or "Political figures" or "Quest givers"',
+      hint: 'E.g., "The main villain", "Recurring allies", or "Quest givers"',
     },
     {
       id: "locations",
       question: "What locations would you like detailed maps for?",
-      hint: "List location types needing maps. For example: \"Main city hub\" or \"Villain's fortress\" or \"Ancient temple\" or \"Wilderness regions\"",
+      hint: 'E.g., "Main city hub", "Villain\'s fortress", or "Ancient temple"',
     },
     {
       id: "villains",
       question: "What recurring villains or factions should be fleshed out?",
-      hint: 'Describe antagonists needing detail. For example: "The main villain and their lieutenants" or "Rival adventuring party" or "Corrupt noble house" or "Cult of the ancient god"',
+      hint: 'E.g., "Main villain and lieutenants", "Rival adventuring party", or "Corrupt noble house"',
     },
     {
       id: "contingencies",
       question: "What plot complications could arise if players go off-track?",
-      hint: 'Describe possible diversions. For example: "Alternative paths to the main objective" or "Side quests that connect back to the main plot" or "Consequences of avoiding key encounters"',
+      hint: 'E.g., "Alternative paths to main objective", "Side quests reconnecting to main plot"',
     },
   ],
 } as const;
+
 
 interface PromptWheelProps {
   section: keyof typeof campaignSections;
