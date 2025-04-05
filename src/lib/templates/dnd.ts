@@ -81,7 +81,7 @@ Campaign Structure Guidelines:
 - Plot Structure: Outline the main story arc with clear plot hooks, rising action, climax, and resolution
 - Key NPCs: Create 3-5 important NPCs with brief descriptions, motivations, and roles in the campaign
 - Main Locations: Detail 3-5 significant locations with interesting features and adventure hooks
-- Encounters: Suggest 3-5 key encounters (combat, social, or exploration) appropriate for the level range
+- Encounters: Develop 3-5 key tactical encounters with detailed battlefield layouts, enemy compositions, dynamic elements, and multiple resolution approaches
 
 Writing Style:
 - Provide clear organization with headers for each section
@@ -95,10 +95,22 @@ Format your response as a structured campaign outline with the following section
 2. Campaign Overview
 3. Plot Structure
 4. Key NPCs
-5. Main Locations
-6. Key Encounters
+5. Main Locations & Map Descriptions
+6. Key Encounters (For each encounter include:
+   - Battlefield layout with dimensions, terrain features, and tactical elements
+   - Enemy composition with approximate CR values and tactics
+   - Environmental factors, hazards, or dynamic elements
+   - Multiple tactical objectives and alternative approaches
+   - Scaling guidance for different party sizes
+   - Specific treasure and rewards)
 7. Campaign Conclusion
+8. DM Guide
+9. Session Outline
+10. Player Handouts
+11. Treasure & Magic Items
+
+For Map Descriptions: Include clear details about layout, dimensions, key features, and atmospheric elements for each important location. Describe them in enough detail that a DM could sketch or generate them visually.
 
 Generate the campaign outline with appropriate formatting and organization for easy reference.
 `;
-} 
+}
