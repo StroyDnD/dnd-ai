@@ -2,12 +2,13 @@ import { useState, useEffect } from "react";
 import PromptWheel from "@/components/PromptWheel";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Loader, Check } from "lucide-react";
-import { campaignSections } from "@/components/PromptWheel";
+// import { campaignSections } from "@/components/PromptWheel";
 import createCampaignBackground from "@/images/create-campaign-bg.png";
 import { StoryService } from "@/lib/api";
 import { DndCampaignAnswers } from "@/lib/templates";
 import { cn } from "@/lib/utils";
 import { config, testDndCampaignAnswers } from "@/lib/config";
+import { campaignSections } from "@/data/campaignSections";
 
 // Define all sections in order
 const sections = [
@@ -105,6 +106,13 @@ export default function CreateStory() {
           locations: allAnswers.locations || "",
           villains: allAnswers.villains || "",
           contingencies: allAnswers.contingencies || "",
+          // New fields
+          historyLore: allAnswers.historyLore || "",
+          religionsDeities: allAnswers.religionsDeities || "",
+          majorVillain: allAnswers.majorVillain || "",
+          criticalEvents: allAnswers.criticalEvents || "",
+          sensitiveContent: allAnswers.sensitiveContent || "",
+          characterDeath: allAnswers.characterDeath || "",
         };
         
         const result = await StoryService.generateDndCampaign(dndAnswers);

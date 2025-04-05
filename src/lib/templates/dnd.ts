@@ -16,23 +16,29 @@ export interface DndCampaignAnswers {
   culturalInspiration?: string;
   magicLevel?: string;
   technologyLevel?: string;
+  historyLore?: string;
+  religionsDeities?: string;
   
   // Campaign Structure
   storyArcs?: string;
   structure?: string;
   partyMotivation?: string;
+  majorVillain?: string;
+  criticalEvents?: string;
   
   // Tone & Themes
   emotionalTone?: string;
   coreThemes?: string;
   otherGenres?: string;
   moralChoices?: string;
+  sensitiveContent?: string;
   
   // Player Experience
   gameplayBalance?: string;
   characterClasses?: string;
   rewards?: string;
   backgrounds?: string;
+  characterDeath?: string;
   
   // DMing Support
   challengingEncounters?: string;
@@ -63,6 +69,12 @@ ${answers.gameplayBalance ? `Gameplay Balance: ${answers.gameplayBalance}` : ''}
 ${answers.characterClasses ? `Featured Classes: ${answers.characterClasses}` : ''}
 ${answers.otherGenres ? `Additional Genres: ${answers.otherGenres}` : ''}
 ${answers.moralChoices ? `Moral Choices: ${answers.moralChoices}` : ''}
+${answers.historyLore ? `Historical Events/Lore: ${answers.historyLore}` : ''}
+${answers.religionsDeities ? `Religions/Deities: ${answers.religionsDeities}` : ''}
+${answers.majorVillain ? `Main Antagonist: ${answers.majorVillain}` : ''}
+${answers.criticalEvents ? `Critical Events: ${answers.criticalEvents}` : ''}
+${answers.sensitiveContent ? `Content to Avoid: ${answers.sensitiveContent}` : ''}
+${answers.characterDeath ? `Lethality Level: ${answers.characterDeath}` : ''}
 
 Campaign Structure Guidelines:
 - Campaign Overview: Create a brief summary of the campaign's central conflict and premise
