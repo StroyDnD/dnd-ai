@@ -9,6 +9,7 @@ import { DndCampaignAnswers } from "@/lib/templates";
 import { cn } from "@/lib/utils";
 import { config, testDndCampaignAnswers } from "@/lib/config";
 import { campaignSections } from "@/data/campaignSections";
+import { useNavigate } from "react-router";
 
 // Define all sections in order
 const sections = [
@@ -21,6 +22,7 @@ const sections = [
 type CampaignSection = keyof typeof campaignSections;
 
 export default function CreateStory() {
+  const navigate = useNavigate();
   const [currentSection, setCurrentSection] = useState<CampaignSection>("World Building");
   const [allAnswers, setAllAnswers] = useState<Record<string, string>>({});
   const [completedSections, setCompletedSections] = useState<CampaignSection[]>([]);
@@ -56,6 +58,12 @@ export default function CreateStory() {
     setShowGenerateButton(config.testMode || allSectionsCompleted);
   }, [completedSections]);
 
+  // Update useEffect to navigate when campaign is generated
+  useEffect(() => {
+    if (generatedCampaign) {
+      navigate('/campaign', { state: { campaign: generatedCampaign } });
+    }
+  }, [generatedCampaign, navigate]);
 
   const handleGenerateCampaign = async () => {
     if (isGenerating) return; // Prevent multiple clicks
@@ -138,58 +146,6 @@ export default function CreateStory() {
   const handleReturnToQuestions = () => {
     setGeneratedCampaign(null);
   };
-
-  // Display the generated campaign if available
-  if (generatedCampaign) {
-    return (
-      <div className="min-h-screen relative">
-        <div className="absolute inset-0 z-0">
-          <img
-            src={createCampaignBackground}
-            alt="Hero background"
-            className="object-cover w-full h-full object-center fixed inset-0"
-            loading="eager"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-white/30 via-transparent to-transparent" />
-          <div className="absolute inset-0 bg-gradient-to-r from-white/30 via-transparent to-transparent" />
-        </div>
-        
-        <div className="relative z-10 pt-16 p-4 md:p-8">
-          <div className="max-w-4xl mx-auto">
-            <div className="bg-white/95 backdrop-blur-sm shadow-lg rounded-lg overflow-hidden">
-              <div className="p-6 md:p-8">
-                <Button 
-                  variant="outline" 
-                  onClick={handleReturnToQuestions}
-                  className="mb-4"
-                >
-                  ← Back to Questions
-                </Button>
-                
-                <h1 className="text-2xl md:text-3xl font-bold mb-6 text-center text-indigo-900">
-                  {generatedCampaign.title}
-                </h1>
-                
-                <div className="prose prose-indigo max-w-none">
-                  {generatedCampaign.content.split('\n').map((paragraph, idx) => {
-                    // Skip the title which is already displayed above
-                    if (idx === 0 && paragraph.trim() === generatedCampaign.title) {
-                      return null;
-                    }
-                    return paragraph.trim() ? (
-                      <p key={idx} className="mb-4">{paragraph}</p>
-                    ) : (
-                      <br key={idx} />
-                    );
-                  })}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen">
