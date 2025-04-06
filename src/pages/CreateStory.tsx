@@ -31,6 +31,48 @@ export default function CreateStory() {
   const [error, setError] = useState<string | null>(null);
   const [showGenerateButton, setShowGenerateButton] = useState(config.testMode ? true : false);
 
+  // Populate allAnswers with test data when in test mode
+  useEffect(() => {
+    if (config.testMode) {
+      // Convert DndCampaignAnswers to Record<string, string> format
+      const testAnswersRecord: Record<string, string> = {
+        levelRange: testDndCampaignAnswers.levelRange ?? "",
+        campaignLength: testDndCampaignAnswers.campaignLength ?? "",
+        // Convert themes array back to comma-separated string for consistency
+        coreThemes: (testDndCampaignAnswers.themes || []).join(', '),
+        // Extract values from the setting string (this is a simplification)
+        setting: testDndCampaignAnswers.setting ?? "",
+        coreConflict: testDndCampaignAnswers.coreConflict ?? "",
+        storyArcs: testDndCampaignAnswers.storyArcs ?? "",
+        structure: testDndCampaignAnswers.structure ?? "",
+        emotionalTone: testDndCampaignAnswers.emotionalTone ?? "",
+        partyMotivation: testDndCampaignAnswers.partyMotivation ?? "",
+        otherGenres: testDndCampaignAnswers.otherGenres ?? "",
+        moralChoices: testDndCampaignAnswers.moralChoices ?? "",
+        gameplayBalance: testDndCampaignAnswers.gameplayBalance ?? "",
+        characterClasses: testDndCampaignAnswers.characterClasses ?? "",
+        backgrounds: testDndCampaignAnswers.backgrounds ?? "",
+        rewards: testDndCampaignAnswers.rewards ?? "",
+        challengingEncounters: testDndCampaignAnswers.challengingEncounters ?? "",
+        npcDevelopment: testDndCampaignAnswers.npcDevelopment ?? "",
+        locations: testDndCampaignAnswers.locations ?? "",
+        villains: testDndCampaignAnswers.villains ?? "",
+        contingencies: testDndCampaignAnswers.contingencies ?? "",
+        historyLore: testDndCampaignAnswers.historyLore ?? "",
+        religionsDeities: testDndCampaignAnswers.religionsDeities ?? "",
+        majorVillain: testDndCampaignAnswers.majorVillain ?? "",
+        criticalEvents: testDndCampaignAnswers.criticalEvents ?? "",
+        sensitiveContent: testDndCampaignAnswers.sensitiveContent ?? "",
+        characterDeath: testDndCampaignAnswers.characterDeath ?? "",
+      };
+      
+      setAllAnswers(testAnswersRecord);
+      
+      // Mark all sections as completed in test mode
+      setCompletedSections([...sections] as CampaignSection[]);
+    }
+  }, []);
+
   const handleAnswersUpdate = (sectionAnswers: Record<string, string>) => {
     setAllAnswers(prev => ({
       ...prev,
@@ -147,6 +189,12 @@ export default function CreateStory() {
     setGeneratedCampaign(null);
   };
 
+  // Handler to clear all answers (dev only)
+  const handleClearAnswers = () => {
+    setAllAnswers({});
+    setCompletedSections([]);
+  };
+
   return (
     <div className="min-h-screen">
       {/* Loading overlay */}
@@ -221,6 +269,20 @@ export default function CreateStory() {
             initialAnswers={allAnswers}
           />
         </div>
+        
+        {/* Floating Dev Button for clearing answers (test mode only) */}
+        {config.testMode && (
+          <div className="fixed right-12 bottom-32 z-50">
+            <Button 
+              className="px-4 py-2 text-sm rounded-md border border-red-400 bg-red-100 text-red-800 shadow-sm hover:bg-red-200 transition-all"
+              onClick={handleClearAnswers}
+              variant="outline"
+              size="sm"
+            >
+              Clear Answers (Dev)
+            </Button>
+          </div>
+        )}
         
         {/* Floating Generate Campaign button that appears when all sections are completed or in test mode */}
         <div 
