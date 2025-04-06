@@ -19,6 +19,10 @@ const PromptWheel = ({ section, onAnswersUpdate, onSectionComplete, initialAnswe
     setCurrentPromptIndex(0)
   }, [section])
 
+  useEffect(() => {
+    setAnswers(initialAnswers);
+  }, [initialAnswers]);
+
   const handleNext = () => {
     if (answers[prompts[currentPromptIndex].id]?.trim()) {
       if (currentPromptIndex === prompts.length - 1) {

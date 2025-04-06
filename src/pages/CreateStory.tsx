@@ -33,6 +33,7 @@ export default function CreateStory() {
 
   // Populate allAnswers with test data when in test mode
   useEffect(() => {
+    // some answers missing here, add maually
     if (config.testMode) {
       // Convert DndCampaignAnswers to Record<string, string> format
       const testAnswersRecord: Record<string, string> = {
@@ -41,6 +42,7 @@ export default function CreateStory() {
         // Convert themes array back to comma-separated string for consistency
         coreThemes: (testDndCampaignAnswers.themes || []).join(', '),
         // Extract values from the setting string (this is a simplification)
+        technologyLevel: testDndCampaignAnswers.technologyLevel ?? "",
         setting: testDndCampaignAnswers.setting ?? "",
         coreConflict: testDndCampaignAnswers.coreConflict ?? "",
         storyArcs: testDndCampaignAnswers.storyArcs ?? "",
