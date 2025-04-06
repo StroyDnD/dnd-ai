@@ -90,27 +90,77 @@ Writing Style:
 - Balance combat, roleplay, and exploration elements
 - Ensure the campaign is adaptable to different player choices and approaches
 
-Format your response as a structured campaign outline with the following sections:
-1. Campaign Title
-2. Campaign Overview
-3. Plot Structure
-4. Key NPCs
-5. Main Locations & Map Descriptions
-6. Key Encounters (For each encounter include:
-   - Battlefield layout with dimensions, terrain features, and tactical elements
-   - Enemy composition with approximate CR values and tactics
-   - Environmental factors, hazards, or dynamic elements
-   - Multiple tactical objectives and alternative approaches
-   - Scaling guidance for different party sizes
-   - Specific treasure and rewards)
-7. Campaign Conclusion
-8. DM Guide
-9. Session Outline
-10. Player Handouts
-11. Treasure & Magic Items
+Format your response using a consistent structure that can be easily parsed:
 
-For Map Descriptions: Include clear details about layout, dimensions, key features, and atmospheric elements for each important location. Describe them in enough detail that a DM could sketch or generate them visually.
+1. First, provide a title for your campaign on the first line, prefixed with "# ".
 
-Generate the campaign outline with appropriate formatting and organization for easy reference.
+2. Then, organize your content into these major sections, each with a specific format:
+
+## SECTION: Campaign Overview
+[Content for campaign overview]
+
+## SECTION: Plot Structure
+[Content for plot structure]
+
+## SECTION: Key NPCs
+[Content for key NPCs]
+
+## SECTION: Main Locations
+[Content for main locations]
+
+## SECTION: Key Encounters
+[Content for key encounters]
+
+## SECTION: Campaign Conclusion
+[Content for campaign conclusion]
+
+## SECTION: DM Guide
+[Content for DM guide]
+
+## SECTION: Session Outline
+[Content for session outline]
+
+## SECTION: Player Handouts
+[Content for player handouts]
+
+## SECTION: Treasure & Magic Items
+[Content for treasure & magic items]
+
+3. For each section that contains subsections, use the following format:
+
+### SUBSECTION: [Subsection Name]
+[Content for this subsection]
+
+4. For lists within sections or subsections, use consistent bullet points:
+
+* [List item 1]
+* [List item 2]
+
+5. For each Key NPC, use this format:
+### SUBSECTION: [NPC Name]
+* Role: [NPC's role]
+* Motivation: [NPC's motivation]
+* Description: [Brief physical/personality description]
+* Connections: [Relationships to plot or other NPCs]
+
+6. For each Location, use this format:
+### SUBSECTION: [Location Name]
+* Type: [Type of location]
+* Description: [Physical description]
+* Key Features: [Notable elements]
+* Encounters: [Possible encounters here]
+* Secrets: [Hidden elements or lore]
+
+7. For each Encounter, use this format:
+### SUBSECTION: [Encounter Name]
+* Location: [Where this occurs]
+* Enemies: [Enemy types and CRs]
+* Battlefield: [Layout and dimensions]
+* Tactics: [Enemy tactics]
+* Objectives: [Multiple ways to succeed]
+* Rewards: [Specific treasures/outcomes]
+* Scaling: [Adjustments for party size/level]
+
+Use these exact formatting conventions throughout your response to ensure the campaign can be properly parsed and displayed to users. Do not use alternative formats or deviate from this structure.
 `;
 }
