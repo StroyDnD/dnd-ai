@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import PromptWheel from "@/components/PromptWheel";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Loader, Check } from "lucide-react";
@@ -10,6 +10,7 @@ import { cn } from "@/lib/utils";
 import { config, testDndCampaignAnswers } from "@/lib/config";
 import { campaignSections } from "@/data/campaignSections";
 import { useNavigate } from "react-router";
+import { useCampaign, CampaignSection } from "@/context/CampaignContext";
 
 // Define all sections in order
 const sections = [
@@ -19,49 +20,102 @@ const sections = [
   "Player Experience", 
   "Practical DMing Support"
 ] as const;
-type CampaignSection = keyof typeof campaignSections;
 
 export default function CreateStory() {
   const navigate = useNavigate();
-  const [currentSection, setCurrentSection] = useState<CampaignSection>("World Building");
-  const [allAnswers, setAllAnswers] = useState<Record<string, string>>({});
-  const [completedSections, setCompletedSections] = useState<CampaignSection[]>([]);
+  
+  // Use campaign context instead of local state
+  const { 
+    currentSection, 
+    setCurrentSection,
+    answers, 
+    updateAnswers,
+    completedSections,
+    addCompletedSection,
+    generatedCampaign,
+    setGeneratedCampaign
+  } = useCampaign();
+  
   const [isGenerating, setIsGenerating] = useState(false);
-  const [generatedCampaign, setGeneratedCampaign] = useState<{ title: string; content: string } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [showGenerateButton, setShowGenerateButton] = useState(config.testMode ? true : false);
+  // Flag to track if we should navigate to campaign after generation
+  const shouldNavigate = useRef(false);
+
+  // Populate allAnswers with test data when in test mode
+  useEffect(() => {
+    // some answers missing here, add maually
+    if (config.testMode) {
+      // Convert DndCampaignAnswers to Record<string, string> format
+      const testAnswersRecord: Record<string, string> = {
+        levelRange: testDndCampaignAnswers.levelRange ?? "",
+        campaignLength: testDndCampaignAnswers.campaignLength ?? "",
+        // Convert themes array back to comma-separated string for consistency
+        coreThemes: (testDndCampaignAnswers.themes || []).join(', '),
+        // Extract values from the setting string (this is a simplification)
+        technologyLevel: testDndCampaignAnswers.technologyLevel ?? "",
+        setting: testDndCampaignAnswers.setting ?? "",
+        coreConflict: testDndCampaignAnswers.coreConflict ?? "",
+        storyArcs: testDndCampaignAnswers.storyArcs ?? "",
+        structure: testDndCampaignAnswers.structure ?? "",
+        emotionalTone: testDndCampaignAnswers.emotionalTone ?? "",
+        partyMotivation: testDndCampaignAnswers.partyMotivation ?? "",
+        otherGenres: testDndCampaignAnswers.otherGenres ?? "",
+        moralChoices: testDndCampaignAnswers.moralChoices ?? "",
+        gameplayBalance: testDndCampaignAnswers.gameplayBalance ?? "",
+        characterClasses: testDndCampaignAnswers.characterClasses ?? "",
+        backgrounds: testDndCampaignAnswers.backgrounds ?? "",
+        rewards: testDndCampaignAnswers.rewards ?? "",
+        challengingEncounters: testDndCampaignAnswers.challengingEncounters ?? "",
+        npcDevelopment: testDndCampaignAnswers.npcDevelopment ?? "",
+        locations: testDndCampaignAnswers.locations ?? "",
+        villains: testDndCampaignAnswers.villains ?? "",
+        contingencies: testDndCampaignAnswers.contingencies ?? "",
+        historyLore: testDndCampaignAnswers.historyLore ?? "",
+        religionsDeities: testDndCampaignAnswers.religionsDeities ?? "",
+        majorVillain: testDndCampaignAnswers.majorVillain ?? "",
+        criticalEvents: testDndCampaignAnswers.criticalEvents ?? "",
+        sensitiveContent: testDndCampaignAnswers.sensitiveContent ?? "",
+        characterDeath: testDndCampaignAnswers.characterDeath ?? "",
+      };
+      
+      // Update answers in context
+      updateAnswers(testAnswersRecord);
+      
+      // Mark all sections as completed in test mode
+      sections.forEach(section => addCompletedSection(section as CampaignSection));
+    }
+  }, []);
 
   const handleAnswersUpdate = (sectionAnswers: Record<string, string>) => {
-    setAllAnswers(prev => ({
-      ...prev,
-      ...sectionAnswers
-    }));
+    // Update answers in context
+    updateAnswers(sectionAnswers);
   };
 
   const handleSectionComplete = (section: CampaignSection) => {
-    if (!completedSections.includes(section)) {
-      setCompletedSections(prev => [...prev, section]);
-    }
+    // Add completed section to context
+    addCompletedSection(section);
     
     // Move to next section
     const currentIndex = sections.indexOf(section);
     if (currentIndex < sections.length - 1) {
-      setCurrentSection(sections[currentIndex + 1]);
+      setCurrentSection(sections[currentIndex + 1] as CampaignSection);
     }
   };
 
   // Show generate button when all sections are completed or in test mode
   useEffect(() => {
     const allSectionsCompleted = sections.every(section => 
-      completedSections.includes(section)
+      completedSections.includes(section as CampaignSection)
     );
     setShowGenerateButton(config.testMode || allSectionsCompleted);
   }, [completedSections]);
 
-  // Update useEffect to navigate when campaign is generated
+  // Update useEffect to navigate only when campaign was just generated
   useEffect(() => {
-    if (generatedCampaign) {
-      navigate('/campaign', { state: { campaign: generatedCampaign } });
+    if (generatedCampaign && shouldNavigate.current) {
+      shouldNavigate.current = false;
+      navigate('/campaign');
     }
   }, [generatedCampaign, navigate]);
 
@@ -71,6 +125,8 @@ export default function CreateStory() {
     try {
       setIsGenerating(true);
       setError(null);
+      // Set flag to navigate after generation completes
+      shouldNavigate.current = true;
 
       // In test mode, use the predefined answers
       if (config.testMode) {
@@ -83,44 +139,44 @@ export default function CreateStory() {
         });
       } else {
         // Extract theme values and convert to array
-        const themesArray = allAnswers.coreThemes ? 
-          allAnswers.coreThemes.split(',').map(theme => theme.trim()) :
+        const themesArray = answers.coreThemes ? 
+          answers.coreThemes.split(',').map(theme => theme.trim()) :
           [];
         
         // Create campaign answers object from all collected answers
         const dndAnswers: DndCampaignAnswers = {
           // Campaign Structure section
-          levelRange: allAnswers.levelRange || "",
-          campaignLength: allAnswers.campaignLength || "",
+          levelRange: answers.levelRange || "",
+          campaignLength: answers.campaignLength || "",
           // World Building section
-          setting: `${allAnswers.culturalInspiration || ""} with ${allAnswers.environments || ""}. Magic: ${allAnswers.magicLevel || ""}. Tech: ${allAnswers.technologyLevel || ""}`,
+          setting: `${answers.culturalInspiration || ""} with ${answers.environments || ""}. Magic: ${answers.magicLevel || ""}. Tech: ${answers.technologyLevel || ""}`,
           // Tone & Themes section 
           themes: themesArray,
           // Additional context
-          coreConflict: allAnswers.coreConflict || "",
-          storyArcs: allAnswers.storyArcs || "",
-          structure: allAnswers.structure || "",
-          emotionalTone: allAnswers.emotionalTone || "",
-          partyMotivation: allAnswers.partyMotivation || "",
-          otherGenres: allAnswers.otherGenres || "",
-          moralChoices: allAnswers.moralChoices || "",
-          gameplayBalance: allAnswers.gameplayBalance || "",
-          characterClasses: allAnswers.characterClasses || "",
-          backgrounds: allAnswers.backgrounds || "",
-          rewards: allAnswers.rewards || "",
+          coreConflict: answers.coreConflict || "",
+          storyArcs: answers.storyArcs || "",
+          structure: answers.structure || "",
+          emotionalTone: answers.emotionalTone || "",
+          partyMotivation: answers.partyMotivation || "",
+          otherGenres: answers.otherGenres || "",
+          moralChoices: answers.moralChoices || "",
+          gameplayBalance: answers.gameplayBalance || "",
+          characterClasses: answers.characterClasses || "",
+          backgrounds: answers.backgrounds || "",
+          rewards: answers.rewards || "",
           // DMing support
-          challengingEncounters: allAnswers.challengingEncounters || "",
-          npcDevelopment: allAnswers.npcDevelopment || "",
-          locations: allAnswers.locations || "",
-          villains: allAnswers.villains || "",
-          contingencies: allAnswers.contingencies || "",
+          challengingEncounters: answers.challengingEncounters || "",
+          npcDevelopment: answers.npcDevelopment || "",
+          locations: answers.locations || "",
+          villains: answers.villains || "",
+          contingencies: answers.contingencies || "",
           // New fields
-          historyLore: allAnswers.historyLore || "",
-          religionsDeities: allAnswers.religionsDeities || "",
-          majorVillain: allAnswers.majorVillain || "",
-          criticalEvents: allAnswers.criticalEvents || "",
-          sensitiveContent: allAnswers.sensitiveContent || "",
-          characterDeath: allAnswers.characterDeath || "",
+          historyLore: answers.historyLore || "",
+          religionsDeities: answers.religionsDeities || "",
+          majorVillain: answers.majorVillain || "",
+          criticalEvents: answers.criticalEvents || "",
+          sensitiveContent: answers.sensitiveContent || "",
+          characterDeath: answers.characterDeath || "",
         };
         
         const result = await StoryService.generateDndCampaign(dndAnswers);
@@ -145,6 +201,15 @@ export default function CreateStory() {
 
   const handleReturnToQuestions = () => {
     setGeneratedCampaign(null);
+  };
+
+  // Handler to clear all answers (dev only)
+  const handleClearAnswers = () => {
+    updateAnswers({});
+    sections.forEach(() => {
+      // Reset completed sections in context
+      completedSections.length = 0;
+    });
   };
 
   return (
@@ -218,9 +283,23 @@ export default function CreateStory() {
             section={currentSection}
             onAnswersUpdate={handleAnswersUpdate}
             onSectionComplete={handleSectionComplete}
-            initialAnswers={allAnswers}
+            initialAnswers={answers}
           />
         </div>
+        
+        {/* Floating Dev Button for clearing answers (test mode only) */}
+        {config.testMode && (
+          <div className="fixed right-12 bottom-32 z-50">
+            <Button 
+              className="px-4 py-2 text-sm rounded-md border border-red-400 bg-red-100 text-red-800 shadow-sm hover:bg-red-200 transition-all"
+              onClick={handleClearAnswers}
+              variant="outline"
+              size="sm"
+            >
+              Clear Answers (Dev)
+            </Button>
+          </div>
+        )}
         
         {/* Floating Generate Campaign button that appears when all sections are completed or in test mode */}
         <div 
