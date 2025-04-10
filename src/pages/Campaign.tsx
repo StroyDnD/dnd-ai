@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { useLocation, useNavigate } from "react-router";
+import { useNavigate } from "react-router";
+import { useCampaign } from "@/context/CampaignContext";
 
 interface CampaignSection {
   title: string;
@@ -14,18 +15,26 @@ interface ParsedCampaign {
 }
 
 export default function Campaign() {
-  const location = useLocation();
   const navigate = useNavigate();
+  const { generatedCampaign, setCurrentSection, setGeneratedCampaign } = useCampaign();
   const [parsedCampaign, setParsedCampaign] = useState<ParsedCampaign | null>(null);
   
   useEffect(() => {
-    // Get campaign data from location state
-    if (location.state?.campaign) {
-      const { title, content } = location.state.campaign;
+    // Get campaign data from context
+    if (generatedCampaign) {
+      const { title, content } = generatedCampaign;
       const parsed = parseCampaignContent(title, content);
       setParsedCampaign(parsed);
     }
-  }, [location.state]);
+  }, [generatedCampaign]);
+
+  const handleBackToEdit = () => {
+    // Clear the generated campaign to prevent immediate redirect
+    setGeneratedCampaign(null);
+    // Navigate back to create-campaign page
+    setCurrentSection("World Building");
+    navigate('/create-campaign');
+  };
 
   if (!parsedCampaign) {
     return (
@@ -40,7 +49,7 @@ export default function Campaign() {
       <div className="max-w-4xl mx-auto pt-12 px-4 pb-24">
         <div className="mb-8 flex justify-start">
           <button
-            onClick={() => navigate('/create-campaign')}
+            onClick={handleBackToEdit}
             className="flex items-center font-cormorant text-ghibli-brown hover:text-ghibli-forest transition-colors"
           >
             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
