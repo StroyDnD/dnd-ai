@@ -1,4 +1,4 @@
-import { useState, ChangeEvent, MouseEvent, useEffect } from "react"
+import { useState, ChangeEvent, MouseEvent, useEffect, useRef } from "react"
 import { Prompt, campaignSections } from "../data/campaignSections"
 
 interface PromptWheelProps {
@@ -13,6 +13,7 @@ const PromptWheel = ({ section, onAnswersUpdate, onSectionComplete, initialAnswe
   const [currentPromptIndex, setCurrentPromptIndex] = useState(0)
   const [answers, setAnswers] = useState<Record<string, string>>(initialAnswers)
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null)
+  const textareaRef = useRef<HTMLTextAreaElement>(null)
 
   // Reset currentPromptIndex to 0 when section changes
   useEffect(() => {
@@ -22,6 +23,13 @@ const PromptWheel = ({ section, onAnswersUpdate, onSectionComplete, initialAnswe
   useEffect(() => {
     setAnswers(initialAnswers);
   }, [initialAnswers]);
+
+  // Focus textarea when currentPromptIndex changes
+  useEffect(() => {
+    if (textareaRef.current) {
+      textareaRef.current.focus()
+    }
+  }, [currentPromptIndex])
 
   const handleNext = () => {
     if (answers[prompts[currentPromptIndex].id]?.trim()) {
@@ -48,6 +56,14 @@ const PromptWheel = ({ section, onAnswersUpdate, onSectionComplete, initialAnswe
     // Notify parent component about the updated answers
     if (onAnswersUpdate) {
       onAnswersUpdate(updatedAnswers)
+    }
+  }
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    // If Enter is pressed without Shift key, move to next prompt
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault() // Prevent default behavior (new line)
+      handleNext()
     }
   }
 
@@ -111,8 +127,10 @@ const PromptWheel = ({ section, onAnswersUpdate, onSectionComplete, initialAnswe
               {position === 0 && (
                 <>
                   <textarea
+                    ref={textareaRef}
                     value={answers[prompt.id] || ""}
                     onChange={handleAnswerChange}
+                    onKeyDown={handleKeyDown}
                     placeholder="Type your answer here..."
                     className="w-full p-3 rounded border border-indigo-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                     rows={4}
