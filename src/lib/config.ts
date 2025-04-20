@@ -11,7 +11,7 @@ export const config = {
   /**
    * Test mode flag - when true, predefined answers will be used instead of user input
    */
-  testMode: false,
+  testMode: true,
 };
 
 /**
