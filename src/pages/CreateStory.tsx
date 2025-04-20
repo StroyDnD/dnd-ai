@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import PromptWheel from "@/components/PromptWheel";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Loader, Check } from "lucide-react";
+import { ArrowRight, Loader, Check, FileText } from "lucide-react";
 // import { campaignSections } from "@/components/PromptWheel";
 import createCampaignBackground from "@/images/create-campaign-bg.png";
 import { StoryService } from "@/lib/api";
@@ -11,6 +11,7 @@ import { config, testDndCampaignAnswers } from "@/lib/config";
 import { campaignSections } from "@/data/campaignSections";
 import { useNavigate } from "react-router";
 import { useCampaign, CampaignSection } from "@/context/CampaignContext";
+import { c } from "node_modules/vite/dist/node/moduleRunnerTransport.d-CXw_Ws6P";
 
 // Define all sections in order
 const sections = [
@@ -38,54 +39,60 @@ export default function CreateStory() {
   
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [showGenerateButton, setShowGenerateButton] = useState(config.testMode ? true : false);
+  const [showGenerateButton, setShowGenerateButton] = useState(false);
   // Flag to track if we should navigate to campaign after generation
   const shouldNavigate = useRef(false);
 
-  // Populate allAnswers with test data when in test mode
-  useEffect(() => {
-    // some answers missing here, add maually
-    if (config.testMode) {
-      // Convert DndCampaignAnswers to Record<string, string> format
-      const testAnswersRecord: Record<string, string> = {
-        levelRange: testDndCampaignAnswers.levelRange ?? "",
-        campaignLength: testDndCampaignAnswers.campaignLength ?? "",
-        // Convert themes array back to comma-separated string for consistency
-        coreThemes: (testDndCampaignAnswers.themes || []).join(', '),
-        // Extract values from the setting string (this is a simplification)
-        technologyLevel: testDndCampaignAnswers.technologyLevel ?? "",
-        setting: testDndCampaignAnswers.setting ?? "",
-        coreConflict: testDndCampaignAnswers.coreConflict ?? "",
-        storyArcs: testDndCampaignAnswers.storyArcs ?? "",
-        structure: testDndCampaignAnswers.structure ?? "",
-        emotionalTone: testDndCampaignAnswers.emotionalTone ?? "",
-        partyMotivation: testDndCampaignAnswers.partyMotivation ?? "",
-        otherGenres: testDndCampaignAnswers.otherGenres ?? "",
-        moralChoices: testDndCampaignAnswers.moralChoices ?? "",
-        gameplayBalance: testDndCampaignAnswers.gameplayBalance ?? "",
-        characterClasses: testDndCampaignAnswers.characterClasses ?? "",
-        backgrounds: testDndCampaignAnswers.backgrounds ?? "",
-        rewards: testDndCampaignAnswers.rewards ?? "",
-        challengingEncounters: testDndCampaignAnswers.challengingEncounters ?? "",
-        npcDevelopment: testDndCampaignAnswers.npcDevelopment ?? "",
-        locations: testDndCampaignAnswers.locations ?? "",
-        villains: testDndCampaignAnswers.villains ?? "",
-        contingencies: testDndCampaignAnswers.contingencies ?? "",
-        historyLore: testDndCampaignAnswers.historyLore ?? "",
-        religionsDeities: testDndCampaignAnswers.religionsDeities ?? "",
-        majorVillain: testDndCampaignAnswers.majorVillain ?? "",
-        criticalEvents: testDndCampaignAnswers.criticalEvents ?? "",
-        sensitiveContent: testDndCampaignAnswers.sensitiveContent ?? "",
-        characterDeath: testDndCampaignAnswers.characterDeath ?? "",
-      };
-      
-      // Update answers in context
-      updateAnswers(testAnswersRecord);
-      
-      // Mark all sections as completed in test mode
-      sections.forEach(section => addCompletedSection(section as CampaignSection));
-    }
-  }, []);
+  // Function to convert testDndCampaignAnswers to the correct format and update context
+  const fillTestAnswers = () => {
+    // Convert DndCampaignAnswers to Record<string, string> format
+    const testAnswersRecord: Record<string, string> = {
+      levelRange: testDndCampaignAnswers.levelRange ?? "",
+      campaignLength: testDndCampaignAnswers.campaignLength ?? "",
+      // Convert themes array back to comma-separated string for consistency
+      coreThemes: (testDndCampaignAnswers.themes || []).join(', '),
+      // Extract values from the setting string and other fields
+      setting: testDndCampaignAnswers.setting ?? "",
+      coreConflict: testDndCampaignAnswers.coreConflict ?? "",
+      environments: testDndCampaignAnswers.environments ?? "",
+      culturalInspiration: testDndCampaignAnswers.culturalInspiration ?? "",
+      magicLevel: testDndCampaignAnswers.magicLevel ?? "",
+      technologyLevel: testDndCampaignAnswers.technologyLevel ?? "",
+      storyArcs: testDndCampaignAnswers.storyArcs ?? "",
+      structure: testDndCampaignAnswers.structure ?? "",
+      emotionalTone: testDndCampaignAnswers.emotionalTone ?? "",
+      partyMotivation: testDndCampaignAnswers.partyMotivation ?? "",
+      otherGenres: testDndCampaignAnswers.otherGenres ?? "",
+      moralChoices: testDndCampaignAnswers.moralChoices ?? "",
+      gameplayBalance: testDndCampaignAnswers.gameplayBalance ?? "",
+      characterClasses: testDndCampaignAnswers.characterClasses ?? "",
+      backgrounds: testDndCampaignAnswers.backgrounds ?? "",
+      rewards: testDndCampaignAnswers.rewards ?? "",
+      challengingEncounters: testDndCampaignAnswers.challengingEncounters ?? "",
+      npcDevelopment: testDndCampaignAnswers.npcDevelopment ?? "",
+      locations: testDndCampaignAnswers.locations ?? "",
+      villains: testDndCampaignAnswers.villains ?? "",
+      contingencies: testDndCampaignAnswers.contingencies ?? "",
+      historyLore: testDndCampaignAnswers.historyLore ?? "",
+      religionsDeities: testDndCampaignAnswers.religionsDeities ?? "",
+      majorVillain: testDndCampaignAnswers.majorVillain ?? "",
+      criticalEvents: testDndCampaignAnswers.criticalEvents ?? "",
+      sensitiveContent: testDndCampaignAnswers.sensitiveContent ?? "",
+      characterDeath: testDndCampaignAnswers.characterDeath ?? "",
+    };
+    
+    // Update answers in context
+    updateAnswers(testAnswersRecord);
+    
+    // Mark all sections as completed
+    sections.forEach(section => 
+      { console.log("adding completed section", section)
+        console.log("completedSections", completedSections)
+        addCompletedSection(section as CampaignSection)});
+  };
+
+  console.log("completedSections END", completedSections)
+
 
   const handleAnswersUpdate = (sectionAnswers: Record<string, string>) => {
     // Update answers in context
@@ -108,7 +115,7 @@ export default function CreateStory() {
     const allSectionsCompleted = sections.every(section => 
       completedSections.includes(section as CampaignSection)
     );
-    setShowGenerateButton(config.testMode || allSectionsCompleted);
+    setShowGenerateButton(allSectionsCompleted);
   }, [completedSections]);
 
   // Update useEffect to navigate only when campaign was just generated
@@ -128,64 +135,53 @@ export default function CreateStory() {
       // Set flag to navigate after generation completes
       shouldNavigate.current = true;
 
-      // In test mode, use the predefined answers
-      if (config.testMode) {
-        console.log("generating test campaign");
-        const result = await StoryService.generateDndCampaign(testDndCampaignAnswers);
-        
-        setGeneratedCampaign({
-          title: result.title || "D&D Campaign",
-          content: result.story,
-        });
-      } else {
-        // Extract theme values and convert to array
-        const themesArray = answers.coreThemes ? 
-          answers.coreThemes.split(',').map(theme => theme.trim()) :
-          [];
-        
-        // Create campaign answers object from all collected answers
-        const dndAnswers: DndCampaignAnswers = {
-          // Campaign Structure section
-          levelRange: answers.levelRange || "",
-          campaignLength: answers.campaignLength || "",
-          // World Building section
-          setting: `${answers.culturalInspiration || ""} with ${answers.environments || ""}. Magic: ${answers.magicLevel || ""}. Tech: ${answers.technologyLevel || ""}`,
-          // Tone & Themes section 
-          themes: themesArray,
-          // Additional context
-          coreConflict: answers.coreConflict || "",
-          storyArcs: answers.storyArcs || "",
-          structure: answers.structure || "",
-          emotionalTone: answers.emotionalTone || "",
-          partyMotivation: answers.partyMotivation || "",
-          otherGenres: answers.otherGenres || "",
-          moralChoices: answers.moralChoices || "",
-          gameplayBalance: answers.gameplayBalance || "",
-          characterClasses: answers.characterClasses || "",
-          backgrounds: answers.backgrounds || "",
-          rewards: answers.rewards || "",
-          // DMing support
-          challengingEncounters: answers.challengingEncounters || "",
-          npcDevelopment: answers.npcDevelopment || "",
-          locations: answers.locations || "",
-          villains: answers.villains || "",
-          contingencies: answers.contingencies || "",
-          // New fields
-          historyLore: answers.historyLore || "",
-          religionsDeities: answers.religionsDeities || "",
-          majorVillain: answers.majorVillain || "",
-          criticalEvents: answers.criticalEvents || "",
-          sensitiveContent: answers.sensitiveContent || "",
-          characterDeath: answers.characterDeath || "",
-        };
-        
-        const result = await StoryService.generateDndCampaign(dndAnswers);
-        
-        setGeneratedCampaign({
-          title: result.title || "D&D Campaign",
-          content: result.story,
-        });
-      }
+      // Extract theme values and convert to array
+      const themesArray = answers.coreThemes ? 
+        answers.coreThemes.split(',').map(theme => theme.trim()) :
+        [];
+      
+      // Create campaign answers object from all collected answers
+      const dndAnswers: DndCampaignAnswers = {
+        // Campaign Structure section
+        levelRange: answers.levelRange || "",
+        campaignLength: answers.campaignLength || "",
+        // World Building section
+        setting: `${answers.culturalInspiration || ""} with ${answers.environments || ""}. Magic: ${answers.magicLevel || ""}. Tech: ${answers.technologyLevel || ""}`,
+        // Tone & Themes section 
+        themes: themesArray,
+        // Additional context
+        coreConflict: answers.coreConflict || "",
+        storyArcs: answers.storyArcs || "",
+        structure: answers.structure || "",
+        emotionalTone: answers.emotionalTone || "",
+        partyMotivation: answers.partyMotivation || "",
+        otherGenres: answers.otherGenres || "",
+        moralChoices: answers.moralChoices || "",
+        gameplayBalance: answers.gameplayBalance || "",
+        characterClasses: answers.characterClasses || "",
+        backgrounds: answers.backgrounds || "",
+        rewards: answers.rewards || "",
+        // DMing support
+        challengingEncounters: answers.challengingEncounters || "",
+        npcDevelopment: answers.npcDevelopment || "",
+        locations: answers.locations || "",
+        villains: answers.villains || "",
+        contingencies: answers.contingencies || "",
+        // New fields
+        historyLore: answers.historyLore || "",
+        religionsDeities: answers.religionsDeities || "",
+        majorVillain: answers.majorVillain || "",
+        criticalEvents: answers.criticalEvents || "",
+        sensitiveContent: answers.sensitiveContent || "",
+        characterDeath: answers.characterDeath || "",
+      };
+      
+      const result = await StoryService.generateDndCampaign(dndAnswers);
+      
+      setGeneratedCampaign({
+        title: result.title || "D&D Campaign",
+        content: result.story,
+      });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to generate campaign.");
       console.error("Campaign generation error:", err);
@@ -289,7 +285,7 @@ export default function CreateStory() {
         
         {/* Floating Dev Button for clearing answers (test mode only) */}
         {config.testMode && (
-          <div className="fixed right-12 bottom-32 z-50">
+          <div className="fixed right-12 bottom-32 z-50 flex flex-col gap-3">
             <Button 
               className="px-4 py-2 text-sm rounded-md border border-red-400 bg-red-100 text-red-800 shadow-sm hover:bg-red-200 transition-all"
               onClick={handleClearAnswers}
@@ -297,6 +293,17 @@ export default function CreateStory() {
               size="sm"
             >
               Clear Answers (Dev)
+            </Button>
+            
+            {/* New Fill Answers button */}
+            <Button 
+              className="px-4 py-2 text-sm rounded-md border border-indigo-400 bg-indigo-100 text-indigo-800 shadow-sm hover:bg-indigo-200 transition-all"
+              onClick={fillTestAnswers}
+              variant="outline"
+              size="sm"
+            >
+              <FileText className="mr-2 h-4 w-4" />
+              Fill Answers (Dev)
             </Button>
           </div>
         )}
