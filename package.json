@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
+    "build": "scripts/load-secrets.sh vite build",
     "lint": "eslint .",
     "preview": "vite preview"
   },
@@ -25,6 +25,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.19.0",
+    "@flydotio/dockerfile": "^0.7.10",
     "@types/node": "^22.13.5",
     "@types/react": "^19.0.8",
     "@types/react-dom": "^19.0.3",
