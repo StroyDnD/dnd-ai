@@ -69,5 +69,14 @@ export default class StoryService {
     });
   }
 
-  // Additional methods for other genres can be added here in the future
+  // static async generateMapTemplate(campaignTitle: string, campaignContent: string): Promise<StoryGenerationResult> {
+  //   try {
+  //     const mapTemplate = generateMapTemplate(campaignTitle, campaignContent);
+  //     const mapText = await OpenAIService.generateStory(mapTemplate);
+  //     return {
+  //       story: mapText,
+  //     };
+  //   } catch (error) {
+  //     console.error('Error in map template generation:', error);
+  //   }
 } 
