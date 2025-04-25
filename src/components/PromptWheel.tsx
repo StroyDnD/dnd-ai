@@ -1,4 +1,4 @@
-import { useState, ChangeEvent, MouseEvent, useEffect, useRef } from "react"
+import { useState, ChangeEvent, useEffect, useRef } from "react"
 import { Prompt, campaignSections } from "../data/campaignSections"
 
 interface PromptWheelProps {

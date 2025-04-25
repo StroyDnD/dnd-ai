@@ -1,4 +1,4 @@
-import { BookOpen, Sword, Shield, Map, ArrowRight } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { useNavigate } from "react-router";
 import landingBackground from "@/images/landing-bg.png";
 

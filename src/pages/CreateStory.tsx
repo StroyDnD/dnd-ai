@@ -8,10 +8,8 @@ import { StoryService } from "@/lib/api";
 import { DndCampaignAnswers } from "@/lib/templates";
 import { cn } from "@/lib/utils";
 import { config, testDndCampaignAnswers } from "@/lib/config";
-import { campaignSections } from "@/data/campaignSections";
 import { useNavigate } from "react-router";
 import { useCampaign, CampaignSection } from "@/context/CampaignContext";
-import { c } from "node_modules/vite/dist/node/moduleRunnerTransport.d-CXw_Ws6P";
 
 // Define all sections in order
 const sections = [
@@ -193,10 +191,6 @@ export default function CreateStory() {
   const handleNavigateToSection = (section: CampaignSection) => {
     if (isGenerating) return; // Prevent navigation while generating
     setCurrentSection(section);
-  };
-
-  const handleReturnToQuestions = () => {
-    setGeneratedCampaign(null);
   };
 
   // Handler to clear all answers (dev only)
