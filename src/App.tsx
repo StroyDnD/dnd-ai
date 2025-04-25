@@ -2,14 +2,16 @@ import './App.css'
 import { BrowserRouter } from "react-router"
 import { AppRoutes } from "./routes/AppRoutes"
 import { CampaignProvider } from './context/CampaignContext'
-
+import { AuthProvider } from './providers/AuthProvider'
 function App() {
 
   return (
     <BrowserRouter>
-      <CampaignProvider>
-        <AppRoutes />
-      </CampaignProvider>
+      <AuthProvider>
+        <CampaignProvider>
+          <AppRoutes />
+        </CampaignProvider>
+      </AuthProvider>
     </BrowserRouter>
   )
 }
