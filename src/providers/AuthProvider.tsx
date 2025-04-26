@@ -1,5 +1,6 @@
 import supabase from '@/utils/supabase';
 import { createContext, useContext, useState, ReactNode, useEffect } from 'react';
+import { useNavigate } from 'react-router';
 
 // Define the user type
 interface User {
@@ -35,6 +36,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [showUserDrawer, setShowUserDrawer] = useState(false);
   const [authLoading, setAuthLoading] = useState(false);
   const [authError, setAuthError] = useState<string | null>(null);
+  const navigate = useNavigate();
+
   const login = async (email: string, password: string) => {
     try {
       setAuthLoading(true);
@@ -58,6 +61,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       console.error('Login error:');
       throw err;
     } finally {
+      navigate('/create-campaign');
       setAuthLoading(false);
     }
   };
@@ -72,6 +76,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       console.error('Logout error:', error);
       throw error;
     } finally {
+      navigate('/');
       setAuthLoading(false);
     }
   };
