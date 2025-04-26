@@ -1,6 +1,6 @@
 import { ArrowRight } from "lucide-react";
 import { useNavigate } from "react-router";
-import landingBackground from "@/images/landing-bg.png";
+import landingBackground from "@/images/landing-bg.jpg";
 import { useAuth } from "@/providers/AuthProvider";
 
 export const Home = () => {
