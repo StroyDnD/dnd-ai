@@ -7,6 +7,8 @@ import {
 import { useAuth } from "@/providers/AuthProvider";
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
+import { randProductAdjective, randAnimal } from "@ngneat/falso";
+
 export const AuthModal = () => {
   const {
     showAuthModal,
@@ -19,12 +21,13 @@ export const AuthModal = () => {
   const [password, setPassword] = useState("");
   const [username, setUsername] = useState("");
   const [mode, setMode] = useState<"login" | "register">("login");
+  const randomUsername = `${randProductAdjective()} ${randAnimal()}`;
 
   const handleButtonPress = () => {
     if (mode === "login") {
       login(email, password);
     } else {
-      signup(email, password, username);
+      signup(email, password, username || randomUsername);
     }
   };
   return (
@@ -43,6 +46,7 @@ export const AuthModal = () => {
               type="email"
               id="email"
               placeholder="Email"
+              required
             />
           </div>
           <div className="flex flex-col gap-2">
@@ -53,13 +57,14 @@ export const AuthModal = () => {
               type="password"
               id="password"
               placeholder="Password"
+              required
             />
           </div>
           {mode === "register" && (
             <div className="flex flex-col gap-2">
               <label htmlFor="username">Username</label>
               <Input
-                placeholder="Username"
+                placeholder={`${randomUsername}`}
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
               />
