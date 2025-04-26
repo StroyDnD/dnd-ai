@@ -79,7 +79,7 @@ export default class StoryService {
         prompt,
       });
 
-      if (!result.data[0].b64_json) {
+      if (!result?.data?.[0]?.b64_json) {
         throw new Error("No image data received from OpenAI");
       }
 
