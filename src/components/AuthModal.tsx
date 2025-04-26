@@ -6,7 +6,7 @@ import {
 } from "@/components/ui/dialog";
 import { useAuth } from "@/providers/AuthProvider";
 import { Input } from "@/components/ui/input";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { randProductAdjective, randAnimal } from "@ngneat/falso";
 
 export const AuthModal = () => {
@@ -21,7 +21,9 @@ export const AuthModal = () => {
   const [password, setPassword] = useState("");
   const [username, setUsername] = useState("");
   const [mode, setMode] = useState<"login" | "register">("login");
-  const randomUsername = `${randProductAdjective()} ${randAnimal()}`;
+  const randomUsername = useMemo(() => {
+    return `${randProductAdjective()} ${randAnimal()}`;
+  }, []);
 
   const handleButtonPress = () => {
     if (mode === "login") {
@@ -30,6 +32,7 @@ export const AuthModal = () => {
       signup(email, password, username || randomUsername);
     }
   };
+
   return (
     <Dialog open={showAuthModal} onOpenChange={setShowAuthModal}>
       <DialogContent className="bg-white border-none">
