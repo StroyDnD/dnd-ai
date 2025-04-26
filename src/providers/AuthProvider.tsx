@@ -61,6 +61,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       console.error('Login error:');
       throw err;
     } finally {
+      navigate('/create-campaign');
       setAuthLoading(false);
     }
   };
