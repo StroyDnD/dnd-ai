@@ -5,9 +5,10 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "scripts/load-secrets.sh vite build",
+    "build": "export $(cat .env | xargs) && vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "deploy": "DOCKER_BUILDKIT=1 flyctl deploy"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.11",
