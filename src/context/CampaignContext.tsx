@@ -1,5 +1,4 @@
 import { createContext, useContext, useState, ReactNode } from 'react';
-import { DndCampaignAnswers } from '@/lib/templates';
 
 // Define campaign section types based on existing code
 export type CampaignSection = 
