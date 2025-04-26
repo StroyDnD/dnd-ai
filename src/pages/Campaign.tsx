@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import { useCampaign } from "@/context/CampaignContext";
+import { parseLocations, generateMapTemplate } from "@/lib/templates/mapGenerator";
+import { StoryService } from "@/lib/api";
 
 interface CampaignSection {
   title: string;
@@ -18,6 +20,9 @@ export default function Campaign() {
   const navigate = useNavigate();
   const { generatedCampaign, setCurrentSection, setGeneratedCampaign } = useCampaign();
   const [parsedCampaign, setParsedCampaign] = useState<ParsedCampaign | null>(null);
+  const [isGeneratingMap, setIsGeneratingMap] = useState(false);
+  const [mapError, setMapError] = useState<string | null>(null);
+  const [mapImage, setMapImage] = useState<string | null>(null);
   
   useEffect(() => {
     // Get campaign data from context
@@ -36,6 +41,39 @@ export default function Campaign() {
     navigate('/create-campaign');
   };
 
+  const handleGenerateMaps = async () => {
+    if (!generatedCampaign) return;
+    
+    try {
+      setIsGeneratingMap(true);
+      setMapError(null);
+      
+      // Parse locations from campaign content
+      const locations = parseLocations(generatedCampaign);
+      if (!locations.length) {
+        setMapError("No locations found in campaign content");
+        return;
+      }
+      
+      // Generate map template
+      const mapTemplate = generateMapTemplate(locations);
+      console.log('mapTemplate', mapTemplate);
+      
+      // Call the map generation service
+      const result = await StoryService.generateMap(mapTemplate);
+      
+      if (result.illustrations && result.illustrations[0]) {
+        setMapImage(result.illustrations[0]);
+      }
+      
+    } catch (error) {
+      console.error("Error generating map:", error);
+      setMapError(error instanceof Error ? error.message : "Failed to generate map");
+    } finally {
+      setIsGeneratingMap(false);
+    }
+  };
+
   if (!parsedCampaign) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -47,7 +85,7 @@ export default function Campaign() {
   return (
     <div className="min-h-screen bg-white">
       <div className="max-w-4xl mx-auto pt-12 px-4 pb-24">
-        <div className="mb-8 flex justify-start">
+        <div className="mb-8 flex justify-between items-center">
           <button
             onClick={handleBackToEdit}
             className="flex items-center font-cormorant text-ghibli-brown hover:text-ghibli-forest transition-colors"
@@ -57,7 +95,33 @@ export default function Campaign() {
             </svg>
             Back to Edit
           </button>
+          
+          <button
+            onClick={handleGenerateMaps}
+            disabled={isGeneratingMap}
+            className={`px-4 py-2 bg-ghibli-forest rounded hover:bg-ghibli-brown transition-colors ${
+              isGeneratingMap ? 'opacity-50 cursor-not-allowed' : ''
+            }`}
+          >
+            {isGeneratingMap ? 'Generating Map...' : 'Generate Maps'}
+          </button>
         </div>
+
+        {mapError && (
+          <div className="mb-4 p-4 bg-red-100 text-red-700 rounded">
+            {mapError}
+          </div>
+        )}
+
+        {mapImage && (
+          <div className="mb-8">
+            <img 
+              src={`data:image/png;base64,${mapImage}`} 
+              alt="Generated campaign map" 
+              className="w-full rounded-lg shadow-lg"
+            />
+          </div>
+        )}
         
         <h1 className="font-cinzel text-4xl md:text-5xl font-bold text-ghibli-forest mb-10 text-center">
           {parsedCampaign.title}
