@@ -17,6 +17,9 @@
   --font-imfell: "IM Fell English SC", serif;
   --font-playfair: "Playfair Display", serif;
   --color-title: #FED550;
+  --color-dnd-gray: #4F6D7A;
+  --color-create-story-primary: #FED550;
+  --color-create-story-secondary: #4F6D7A;
 }
 
 :root {

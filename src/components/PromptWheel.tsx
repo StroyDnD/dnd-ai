@@ -1,5 +1,6 @@
 import { useState, ChangeEvent, useEffect, useRef } from "react"
 import { Prompt, campaignSections } from "../data/campaignSections"
+import { generateResponseForPrompt } from "@/lib/api/openai";
 
 interface PromptWheelProps {
   section: keyof typeof campaignSections;
@@ -59,6 +60,18 @@ const PromptWheel = ({ section, onAnswersUpdate, onSectionComplete, initialAnswe
     }
   }
 
+  const autoGenerateResponse = async (prompt: Prompt) => {
+    const response = await generateResponseForPrompt(prompt)
+
+    const currentPromptId = prompts[currentPromptIndex].id
+    const updatedAnswers = {
+      ...answers,
+      [currentPromptId]: response,
+    }
+    
+    setAnswers(updatedAnswers)
+  }
+
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     // If Enter is pressed without Shift key, move to next prompt
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -82,20 +95,20 @@ const PromptWheel = ({ section, onAnswersUpdate, onSectionComplete, initialAnswe
     // Position-based styling
     if (position === 0) {
       containerClass += "transform translate-y-0 scale-100 opacity-100 z-20 "
-      contentClass += "bg-indigo-100/95 backdrop-blur-sm shadow-lg "
+      contentClass += "bg-emerald-100/95 backdrop-blur-sm shadow-lg "
     } else if (position < 0) {
       containerClass += `transform -translate-y-16 scale-90 opacity-50 z-10 `
-      contentClass += "bg-indigo-50/90 backdrop-blur-sm cursor-pointer "
+      contentClass += "bg-emerald-50/90 backdrop-blur-sm cursor-pointer "
 
       if (hoveredIndex === index) {
-        contentClass += "ring-2 ring-indigo-400 shadow-lg "
+        contentClass += "ring-2 ring-emerald-400 shadow-lg "
       }
     } else {
       containerClass += `transform translate-y-16 scale-90 opacity-50 z-0 `
-      contentClass += "bg-indigo-50/90 backdrop-blur-sm cursor-pointer "
+      contentClass += "bg-emerald-50/90 backdrop-blur-sm cursor-pointer "
 
       if (hoveredIndex === index) {
-        contentClass += "ring-2 ring-indigo-400 shadow-lg "
+        contentClass += "ring-2 ring-emerald-400 shadow-lg "
       }
     }
 
@@ -110,8 +123,8 @@ const PromptWheel = ({ section, onAnswersUpdate, onSectionComplete, initialAnswe
         <div className={contentClass}>
           {position < 0 ? (
             <div className="relative">
-              <h3 className="text-sm font-medium text-indigo-800 mb-2">{prompt.question}</h3>
-              <p className="text-indigo-600">{answers[prompt.id] || ""}</p>
+              <h3 className="text-sm font-medium text-emerald-800 mb-2">{prompt.question}</h3>
+              <p className="text-emerald-600">{answers[prompt.id] || ""}</p>
               {answers[prompt.id]?.trim() && (
                 <div className="absolute top-1/2 -translate-y-1/2 right-2 w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-white" viewBox="0 0 20 20" fill="currentColor">
@@ -122,8 +135,8 @@ const PromptWheel = ({ section, onAnswersUpdate, onSectionComplete, initialAnswe
             </div>
           ) : (
             <div>
-              <h3 className="text-lg font-semibold text-indigo-900 mb-2">{prompt.question}</h3>
-              <p className="text-sm text-indigo-600 mb-4">{prompt.hint}</p>
+              <h3 className="text-lg font-semibold text-emerald-900 mb-2">{prompt.question}</h3>
+              <p className="text-sm text-emerald-600 mb-4">{prompt.hint}</p>
               {position === 0 && (
                 <>
                   <textarea
@@ -132,38 +145,43 @@ const PromptWheel = ({ section, onAnswersUpdate, onSectionComplete, initialAnswe
                     onChange={handleAnswerChange}
                     onKeyDown={handleKeyDown}
                     placeholder="Type your answer here..."
-                    className="w-full p-3 rounded border border-indigo-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                    className="w-full p-3 rounded border border-emerald-300 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                     rows={4}
                   />
                   <div className="mt-4 flex justify-between">
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        if (currentPromptIndex > 0) {
-                          setCurrentPromptIndex((prev) => prev - 1)
-                        }
-                      }}
-                      className={`px-6 py-2 rounded-lg font-medium 
-                        ${
-                          currentPromptIndex > 0 ? "bg-indigo-100 text-indigo-600 hover:bg-indigo-200" : "hidden"
-                        } transition-colors duration-200`}
-                    >
-                      Previous
-                    </button>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        handleNext()
-                      }}
-                      disabled={!answers[prompt.id]?.trim()}
-                      className={`px-6 py-2 rounded-lg font-medium 
-                        ${
-                          answers[prompt.id]?.trim()
-                            ? "bg-indigo-600 text-white hover:bg-indigo-700"
-                            : "bg-indigo-300 text-indigo-100"
-                        } transition-colors duration-200`}
-                    >
-                      {currentPromptIndex === prompts.length - 1 ? "Complete Section" : "Next"}
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          if (currentPromptIndex > 0) {
+                            setCurrentPromptIndex((prev) => prev - 1)
+                          }
+                        }}
+                        className={`px-6 py-2 rounded-lg font-medium 
+                          ${
+                            currentPromptIndex > 0 ? "bg-emerald-100 text-emerald-600 hover:bg-emerald-200" : "hidden"
+                          } transition-colors duration-200`}
+                      >
+                        Previous
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          handleNext()
+                        }}
+                        disabled={!answers[prompt.id]?.trim()}
+                        className={`px-6 py-2 rounded-lg font-medium 
+                          ${
+                            answers[prompt.id]?.trim()
+                              ? "bg-emerald-600 text-white hover:bg-emerald-700"
+                              : "bg-emerald-300 text-emerald-100"
+                          } transition-colors duration-200`}
+                      >
+                        {currentPromptIndex === prompts.length - 1 ? "Complete Section" : "Next"}
+                      </button>
+                    </div>
+                    <button onClick={() => autoGenerateResponse(prompt)}>
+                      Auto Generate Response
                     </button>
                   </div>
                 </>
@@ -178,16 +196,16 @@ const PromptWheel = ({ section, onAnswersUpdate, onSectionComplete, initialAnswe
   return (
     <div className="min-h-[calc(100vh-4rem)] p-8 flex flex-col items-center">
       {/* Section header - centered properly */}
-      <div className="text-center mb-8 bg-white/70 backdrop-blur-sm p-4 rounded-lg w-full max-w-2xl">
-        <h2 className="text-2xl font-bold text-indigo-900">{section}</h2>
-        <p className="text-indigo-600">Complete this section to build your campaign</p>
+      <div className="text-center mb-8 bg-emerald-100 p-4 rounded-lg w-full max-w-2xl">
+        <h2 className="text-2xl font-bold text-emerald-900">{section}</h2>
+        <p className="text-emerald-600">Complete this section to build your campaign</p>
       </div>
       
       <div className="relative pt-16 max-w-4xl mx-auto w-full">
         {/* Vertical progress indicator */}
         <div className="fixed left-8 top-24 bottom-24 flex flex-col items-center justify-between">
           {/* Progress text */}
-          <div className="text-sm bg-white/70 backdrop-blur-sm px-3 py-2 rounded-full text-indigo-600 font-medium">
+          <div className="text-sm bg-white/70 backdrop-blur-sm px-3 py-2 rounded-full text-emerald-600 font-medium">
             Question {currentPromptIndex + 1} of {prompts.length}
           </div>
           
@@ -199,16 +217,16 @@ const PromptWheel = ({ section, onAnswersUpdate, onSectionComplete, initialAnswe
                 <div
                   key={index}
                   className={`w-2 h-2 rounded-full transition-colors duration-300 ${
-                    index <= currentPromptIndex ? 'bg-indigo-600' : 'bg-indigo-200'
+                    index <= currentPromptIndex ? 'bg-emerald-600' : 'bg-emerald-200'
                   }`}
                 />
               ))}
             </div>
 
             {/* Vertical progress bar */}
-            <div className="h-full w-2 bg-indigo-100/70 backdrop-blur-sm rounded-full overflow-hidden">
+            <div className="h-full w-2 bg-emerald-100/70 backdrop-blur-sm rounded-full overflow-hidden">
               <div
-                className="w-full bg-indigo-600 transition-all duration-500 rounded-full"
+                className="w-full bg-emerald-600 transition-all duration-500 rounded-full"
                 style={{ 
                   height: `${((currentPromptIndex + 1) / prompts.length) * 100}%`,
                   marginTop: 'auto' // Makes the bar fill from bottom to top

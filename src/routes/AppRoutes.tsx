@@ -1,6 +1,7 @@
 import { AuthModal } from "@/components/AuthModal";
 import { Layout } from "@/components/Layout";
 import { Navbar } from "@/components/Navbar";
+import UserDrawer from "@/components/UserDrawer";
 import Campaign from "@/pages/Campaign";
 import CreateStory from "@/pages/CreateStory";
 import { Home } from "@/pages/Home";
@@ -18,6 +19,7 @@ export const AppRoutes = () => {
         </Route>
       </Routes>
       <AuthModal />
+      <UserDrawer />
     </>
   );
 };

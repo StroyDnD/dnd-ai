@@ -1,12 +1,17 @@
 import { ArrowRight } from "lucide-react";
 import { useNavigate } from "react-router";
 import landingBackground from "@/images/landing-bg.png";
-
+import { useAuth } from "@/providers/AuthProvider";
 export const Home = () => {
   const navigate = useNavigate();
+  const {user, setShowAuthModal} = useAuth();
 
   const handleNavigateToCreateCampaign = () => {
-    navigate("/create-campaign");
+    if (user) {
+      navigate("/create-campaign");
+    } else {
+      setShowAuthModal(true);
+    }
   };
 
   return (
@@ -33,7 +38,7 @@ export const Home = () => {
             <div className="mt-8 flex justify-center">
               <button
                 onClick={handleNavigateToCreateCampaign}
-                className="flex items-center gap-2 justify-center text-2xl px-8 py-5 rounded-full bg-title text-gray-900 hover:bg-yellow-200 transition shadow-lg font-signika"
+                className="cursor-pointer flex items-center gap-2 justify-center text-2xl px-8 py-5 rounded-full bg-title text-gray-900 hover:bg-yellow-200 transition shadow-lg font-signika"
               >
                 <ArrowRight className="mr-1 h-7 w-7" />
                 Build Your Campaign

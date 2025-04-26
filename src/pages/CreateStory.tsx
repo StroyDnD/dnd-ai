@@ -208,7 +208,7 @@ export default function CreateStory() {
       {isGenerating && (
         <div className="fixed inset-0 bg-black/50 z-[100] flex items-center justify-center">
           <div className="bg-white p-6 rounded-lg shadow-xl text-center">
-            <Loader className="h-10 w-10 animate-spin mx-auto mb-4 text-indigo-600" />
+            <Loader className="h-10 w-10 animate-spin mx-auto mb-4 text-emerald-600" />
             <p className="text-lg font-medium">
               {config.testMode ? "Generating Test Campaign..." : "Generating your campaign..."}
             </p>
@@ -242,7 +242,7 @@ export default function CreateStory() {
                   className={cn(
                     "rounded-full whitespace-nowrap flex items-center gap-1",
                     completedSections.includes(section) ? "bg-opacity-90" : "bg-opacity-80",
-                    currentSection === section ? "bg-indigo-600 text-white" : "bg-white/70 text-indigo-900 backdrop-blur-sm hover:bg-white/80"
+                    currentSection === section ? "bg-emerald-600 text-white" : "bg-white/70 text-emerald-900 backdrop-blur-sm hover:bg-white/80"
                   )}
                   size="sm"
                   disabled={isGenerating}
@@ -291,7 +291,7 @@ export default function CreateStory() {
             
             {/* New Fill Answers button */}
             <Button 
-              className="px-4 py-2 text-sm rounded-md border border-indigo-400 bg-indigo-100 text-indigo-800 shadow-sm hover:bg-indigo-200 transition-all"
+              className="px-4 py-2 text-sm rounded-md border border-emerald-400 bg-emerald-100 text-emerald-800 shadow-sm hover:bg-emerald-200 transition-all"
               onClick={fillTestAnswers}
               variant="outline"
               size="sm"
@@ -313,7 +313,7 @@ export default function CreateStory() {
             className={cn(
               "px-6 py-6 text-lg rounded-full border border-white shadow-lg hover:shadow-xl transition-all text-white",
               "hover:scale-110 hover:shadow-[0_0_20px_rgba(99,102,241,0.7)] hover:border-opacity-80 transform transition-transform duration-300",
-              isGenerating ? "bg-gradient-to-r from-indigo-600 to-indigo-400 cursor-not-allowed opacity-80" : "bg-gradient-to-r from-indigo-700 to-indigo-400"
+              isGenerating ? "bg-gradient-to-r from-emerald-600 to-emerald-400 cursor-not-allowed opacity-80" : "bg-gradient-to-r from-emerald-700 to-emerald-400"
             )}
             onClick={handleGenerateCampaign}
             disabled={isGenerating}

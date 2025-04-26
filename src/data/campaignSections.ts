@@ -1,5 +1,5 @@
 export interface Prompt {
-  id: string;
+  id: "environments" | "coreConflict" | "culturalInspiration" | "magicLevel" | "technologyLevel" | "historyLore" | "religionsDeities" | "levelRange" | "storyArcs" | "campaignLength" | "structure" | "partyMotivation" | "majorVillain" | "criticalEvents" | "emotionalTone" | "coreThemes" | "otherGenres" | "moralChoices" | "sensitiveContent" | "gameplayBalance" | "characterClasses" | "rewards" | "backgrounds" | "characterDeath" | "challengingEncounters" | "npcDevelopment" | "locations" | "villains" | "contingencies";
   question: string;
   hint: string;
 }
