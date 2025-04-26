@@ -1,4 +1,3 @@
-import './App.css'
 import { BrowserRouter } from "react-router"
 import { AppRoutes } from "./routes/AppRoutes"
 import { CampaignProvider } from './context/CampaignContext'
