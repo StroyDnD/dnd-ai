@@ -42,11 +42,23 @@ export default class OpenAIService {
   }
 
   /**
-   * In the future, this could be used to generate images for the story
+   * Generates an image using the OpenAI API
    */
-  static async generateIllustration(/* parameters for image generation */): Promise<string> {
-    // This will be implemented in the future for illustrations
-    // Using DALL-E or other OpenAI image generation capabilities
-    return 'Image generation will be implemented in the future.';
+  static async generateImage(params: { model: string; prompt: string }): Promise<OpenAI.Images.ImagesResponse> {
+    try {
+      const response = await openai.images.generate({
+        model: params.model,
+        prompt: params.prompt
+      });
+
+      if (!response.data[0].b64_json) {
+        throw new Error("No image data received from OpenAI");
+      }
+
+      return response;
+    } catch (error) {
+      console.error('Error generating image:', error);
+      throw new Error('Failed to generate image. Please try again later.');
+    }
   }
 } 
