@@ -1,11 +1,17 @@
 import { ArrowRight } from "lucide-react";
 import { useNavigate } from "react-router";
 import landingBackground from "@/images/landing-bg.png";
+import { useAuth } from "@/providers/AuthProvider";
 
 export const Home = () => {
   const navigate = useNavigate();
+  const { user, setShowAuthModal } = useAuth();
 
   const handleNavigateToCreateCampaign = () => {
+    if (!user) {
+      setShowAuthModal(true);
+      return;
+    }
     navigate("/create-campaign");
   };
 
