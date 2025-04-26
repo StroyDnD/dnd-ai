@@ -10,7 +10,7 @@ export type CampaignSection =
   | "Practical DMing Support";
 
 // Interface for the generated campaign
-interface GeneratedCampaign {
+export interface GeneratedCampaign {
   title: string;
   content: string;
 }

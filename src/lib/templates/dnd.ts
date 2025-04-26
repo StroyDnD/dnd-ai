@@ -126,56 +126,7 @@ Format your response using a consistent structure that can be easily parsed:
 ## SECTION: Treasure & Magic Items
 [Content for treasure & magic items]
 
-## SECTION: LLM Map Assets
-The campaign requires both a regional map of the setting and battle maps for key encounters. Follow these strict style guidelines to maintain consistency.
-
-### SUBSECTION: Regional Map
-* #### MAP TYPE: Regional
-* #### MAP TITLE: [Evocative title for the region]
-* #### MAP STYLE: Fantasy Parchment Isometric
-* #### MAP INSTRUCTIONS: Create a regional fantasy map with these exact specifications:
-  - BACKGROUND: Aged parchment with #D2BC9A base color and 15% darker gradient at edges
-  - TERRAIN STYLE: Isometric/3D with hand-drawn appearance, not photorealistic
-  - ELEVATION: Mountains and hills as stylized isometric ridges in brown (#A89078) with subtle shading
-  - FORESTS: Top-down clusters of small trees in dark olive green (#4A5D23)
-  - WATER: Rivers, lakes and seas in blue-gray (#7A9EAB) with thin white edges
-  - SETTLEMENTS: Small iconic buildings (not modern) scaled by settlement importance
-  - TYPOGRAPHY: Region names in uppercase serif font, settlement names in smaller serif font
-  - BOUNDARIES: Political borders as thin dotted lines in dark brown (#5D4B35)
-  - SCALE: Bar showing both miles and kilometers in bottom left corner
-  - TITLE: Large decorative serif font in bottom left or corner, 20% larger than other text
-  - SUBTITLE: Small descriptive text under title in same font family
-  - PATHS: Roads and trails as thin white/light lines (#E8E4D9)
-  - ICONS: Simple symbolic markers for ruins (broken towers), landmarks (stars), and special locations
-  - COLOR PALETTE: Limited to earth tones, primarily browns, greens, and blue-grays
-  - LAYOUT: Rectangular with major features centered and title in bottom left
-  - [Campaign-specific geographic features and locations based on setting]
-
-### SUBSECTION: Battle Maps
-For each key encounter location in your campaign, provide the following:
-
-* #### ENCOUNTER: [Encounter Name]
-* #### MAP TYPE: Battle Map
-* #### MAP TITLE: [Name of the specific location]
-* #### MAP STYLE: Top-Down Tactical Grid
-* #### MAP INSTRUCTIONS: Create a top-down battle map with these exact specifications:
-  - GRID: 5ft square overlay with thin light gray lines (#CCCCCC), 70% opacity
-  - PERSPECTIVE: Strictly top-down 2D view with no perspective distortion
-  - STRUCTURES: Building foundations and walls shown as clean outlined shapes
-  - TERRAIN TEXTURES: Natural surfaces rendered as subtle textures, not photographic
-    * Grass: Light olive green base (#7D8E4E) with subtle texture
-    * Dirt/Paths: Tan/brown (#B69E7B) with granular texture
-    * Stone: Gray (#8E8E8E) with subtle seam lines for manufactured stone
-  - TACTICAL ELEMENTS: Debris, furniture, obstacles shown as top-down silhouettes
-  - SHADOWS: Minimal directional shadows from walls and large objects, 30% opacity
-  - COLOR PALETTE: Natural earth tones only, no saturated or bright colors
-  - SCALE: Consistent 5ft per square throughout entire map
-  - LIGHTING: Ambient light assumed unless specified (no dramatic shadows/lighting)
-  - LAYOUT: Rectangular grid with clear entry/exit points and focal encounter area
-  - DIMENSIONS: [Specific width x height in 5ft squares, e.g. 24x30 squares]
-  - [Specific structural layout, features and objects of the location]
-  - [Tactical positioning information relevant to the encounter]
-
+  
 3. For each section that contains subsections, use the following format:
 
 ### SUBSECTION: [Subsection Name]

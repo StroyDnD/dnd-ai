@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import { useCampaign } from "@/context/CampaignContext";
-import { parseMapAssets } from "@/lib/types/mapAssets";
+import { parseLocations, generateMapTemplate } from "@/lib/templates/mapGenerator";
 import { StoryService } from "@/lib/api";
 
 interface CampaignSection {
@@ -44,17 +44,23 @@ export default function Campaign() {
   const handleGenerateMaps = async () => {
     if (!generatedCampaign) return;
     
-    const mapAssets = parseMapAssets(generatedCampaign.content);
-    if (!mapAssets) {
-      console.log("No map assets found in campaign content");
-      return;
-    }
-
     try {
       setIsGeneratingMap(true);
       setMapError(null);
       
-      const result = await StoryService.generateMap(mapAssets.regional);
+      // Parse locations from campaign content
+      const locations = parseLocations(generatedCampaign);
+      if (!locations.length) {
+        setMapError("No locations found in campaign content");
+        return;
+      }
+      
+      // Generate map template
+      const mapTemplate = generateMapTemplate(locations);
+      console.log('mapTemplate', mapTemplate);
+      
+      // Call the map generation service
+      const result = await StoryService.generateMap(mapTemplate);
       
       if (result.illustrations && result.illustrations[0]) {
         setMapImage(result.illustrations[0]);

@@ -30,7 +30,7 @@ export default class OpenAIService {
           }
         ],
         temperature: 0.7, // Slightly creative but still focused
-        max_tokens: 4000, // Enough for a ~1500 word story
+        max_tokens: 4000, // Enough for a ~3000 word story
       });
 
       // Extract and return the generated story text
