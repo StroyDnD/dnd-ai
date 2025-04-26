@@ -28,17 +28,17 @@ export default class StoryService {
    */
   static async generateStory(input: StoryGenerationInput): Promise<StoryGenerationResult> {
     try {
-      // 1. Generate template from user inputs
+      //Generate template from user inputs
       const template = generateTemplate(input.genre, input.answers);
       
-      // 2. Call OpenAI to generate the story
+      // Call OpenAI to generate the story
       const storyText = await OpenAIService.generateStory(template);
       
-      // 3. Extract title from the story (assuming the first line is the title)
+      // Extract title from the story (assuming the first line is the title)
       const lines = storyText.trim().split('\n');
       const title = lines[0].replace(/^#+ /, '').trim(); // Remove any markdown heading symbols
       
-      // 4. Return the result
+      // Return the result
       return {
         story: storyText,
         title,
@@ -50,7 +50,7 @@ export default class StoryService {
   }
 
   /**
-   * Example method for SciFi story generation with strong typing
+   * Example method for SciFi story generation
    */
   static async generateSciFiStory(answers: SciFiPromptAnswers): Promise<StoryGenerationResult> {
     return this.generateStory({
@@ -60,7 +60,7 @@ export default class StoryService {
   }
 
   /**
-   * Method for D&D campaign generation with strong typing
+   * Method for D&D campaign generation 
    */
   static async generateDndCampaign(answers: DndCampaignAnswers): Promise<StoryGenerationResult> {
     return this.generateStory({
@@ -69,5 +69,29 @@ export default class StoryService {
     });
   }
 
-  // Additional methods for other genres can be added here in the future
+  /**
+   * Generates a map image based on the provided instructions
+   */
+  static async generateMap(prompt: string): Promise<StoryGenerationResult> {
+    try {
+      const result = await OpenAIService.generateImage({
+        model: "gpt-image-1",
+        prompt,
+      });
+
+      if (!result?.data?.[0]?.b64_json) {
+        throw new Error("No image data received from OpenAI");
+      }
+
+      const image_base64 = result.data[0].b64_json;
+      
+      return {
+        story: "Map generated successfully",
+        illustrations: [image_base64]
+      };
+    } catch (error) {
+      console.error('Error in map generation:', error);
+      throw error;
+    }
+  }
 } 

@@ -6,6 +6,7 @@ import { useNavigate } from 'react-router';
 interface User {
   id: string;
   email: string;
+  username?: string;
   // Add other user properties as needed
 }
 
@@ -21,6 +22,8 @@ interface AuthContextType {
   setAuthLoading: (loading: boolean) => void;
   authError: string | null;
   setAuthError: (error: string | null) => void;
+  showUserDrawer: boolean;
+  setShowUserDrawer: (show: boolean) => void;
 }
 
 // Create the context
@@ -30,6 +33,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [showAuthModal, setShowAuthModal] = useState(false);
+  const [showUserDrawer, setShowUserDrawer] = useState(false);
   const [authLoading, setAuthLoading] = useState(false);
   const [authError, setAuthError] = useState<string | null>(null);
   const navigate = useNavigate();
@@ -141,7 +145,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [])
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, showAuthModal, setShowAuthModal, signup, authLoading, setAuthLoading, authError, setAuthError }}>
+    <AuthContext.Provider value={{ user, login, logout, showAuthModal, setShowAuthModal, signup, authLoading, setAuthLoading, authError, setAuthError, showUserDrawer, setShowUserDrawer }}>
       {children}
     </AuthContext.Provider>
   );

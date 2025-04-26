@@ -126,6 +126,7 @@ Format your response using a consistent structure that can be easily parsed:
 ## SECTION: Treasure & Magic Items
 [Content for treasure & magic items]
 
+  
 3. For each section that contains subsections, use the following format:
 
 ### SUBSECTION: [Subsection Name]
