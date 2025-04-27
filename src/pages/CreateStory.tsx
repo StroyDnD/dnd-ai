@@ -1,4 +1,6 @@
+
 import { useState, useEffect, useCallback } from "react";
+import { getFantasySaying } from "@/utils/falso";
 import PromptWheel from "@/components/PromptWheel";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Loader, Check, FileText } from "lucide-react";
@@ -43,7 +45,7 @@ export default function CreateStory() {
   const params = useParams();
   const location = useLocation();
   const isEditMode = location.pathname.includes("edit");
-  // Flag to track if we should navigate to campaign after generation
+  const [fantasySaying, setFantasySaying] = useState<string>("");
 
   // Function to convert testDndCampaignAnswers to the correct format and update context
   const fillTestAnswers = () => {
@@ -236,13 +238,26 @@ export default function CreateStory() {
       fetchCampaign();
     }
   }, [params.id, fetchCampaign, campaign]);
-  console.log(answers);
+
+  useEffect(() => {
+    let intervalId: NodeJS.Timeout | null = null;
+    if (isGenerating) {
+      setFantasySaying(getFantasySaying());
+      intervalId = setInterval(() => {
+        setFantasySaying(getFantasySaying());
+      }, 5000); // Change every 5 seconds
+    }
+    return () => {
+      if (intervalId) clearInterval(intervalId);
+    };
+  }, [isGenerating]);
+
   return (
     <div className="min-h-screen">
       {/* Loading overlay */}
       {isGenerating && (
         <div className="fixed inset-0 bg-black/50 z-[100] flex items-center justify-center">
-          <div className="bg-white p-6 rounded-lg shadow-xl text-center">
+          <div className="bg-white w-md p-6 rounded-lg shadow-xl text-center">
             <Loader className="h-10 w-10 animate-spin mx-auto mb-4 text-emerald-600" />
             <p className="text-lg font-medium">
               {config.testMode
@@ -250,6 +265,9 @@ export default function CreateStory() {
                 : "Generating your campaign..."}
             </p>
             <p className="text-sm text-gray-500 mt-2">This may take a moment</p>
+            {fantasySaying && (
+              <p className="text-sm text-indigo-700 mt-4 italic break-words">{fantasySaying}</p>
+            )}
           </div>
         </div>
       )}
