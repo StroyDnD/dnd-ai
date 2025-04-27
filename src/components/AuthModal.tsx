@@ -69,6 +69,7 @@ export const AuthModal = () => {
               <Input
                 placeholder={`${randomUsername}`}
                 value={username}
+                id="username"
                 onChange={(e) => setUsername(e.target.value)}
               />
             </div>
