@@ -1,12 +1,23 @@
-import { randGender, randPhrase } from '@ngneat/falso';
+import { randPhrase } from '@ngneat/falso';
 
-
+const races = [
+  'Elf',
+  'Dwarf',
+  'Orc',
+  'Human',
+  'Dragonborn',
+  'Tiefling',
+  'Halfling',
+  'Gnome',
+  'Aasimar',
+  'Genasi',
+]
 export function getFantasySaying() {
-    const races = randGender();
+    const race = races[Math.floor(Math.random() * races.length)];
     const phrase = randPhrase();
     const sayings = [
-      `A wise ${races} once said: "${phrase}"`,
-      `In the realm of ${races}, adventure awaits!`,
+      `A wise ${race} once said: "${phrase}"`,
+      `In the realm of ${race}, adventure awaits!`,
       `The dice are rolling in your favor...`,
       `A new quest begins with a single step.`,
       `The tavern whispers: "${phrase}"`,
