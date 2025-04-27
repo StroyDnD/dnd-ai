@@ -1,8 +1,16 @@
-import { StrictMode } from 'react'
+import { StrictMode, useEffect } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.tsx'
+import {initLightboxJS} from 'lightbox.js-react'
 import { PostHogProvider } from 'posthog-js/react'
+
+function LightboxInit() {
+  useEffect(() => {
+    initLightboxJS("Insert your License Key here", "Insert plan type here");
+  }, []);
+  return null;
+}
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
@@ -14,6 +22,7 @@ createRoot(document.getElementById('root')!).render(
         debug: import.meta.env.MODE === "development",
       }}
     >
+      <LightboxInit />
       <App />
     </PostHogProvider>
   </StrictMode>,

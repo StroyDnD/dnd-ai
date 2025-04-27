@@ -9,6 +9,7 @@ import { StoryService } from "@/lib/api";
 import { base64ToFile } from "@/utils/images";
 import supabase from "@/utils/supabase";
 import { useAuth } from "@/providers/AuthProvider";
+import {SlideshowLightbox} from 'lightbox.js-react'
 
 interface CampaignSection {
   title: string;
@@ -156,7 +157,7 @@ export default function Campaign() {
             </svg>
             Back to Edit
           </button>
-          {!campaign?.map_image_url ? (
+          <div className="flex gap-2">
             <button
               onClick={handleGenerateMaps}
               disabled={isGeneratingMap}
@@ -164,9 +165,15 @@ export default function Campaign() {
                 isGeneratingMap ? "opacity-50 cursor-not-allowed" : ""
               }`}
             >
-              {isGeneratingMap ? "Generating Map..." : "Generate Maps"}
+              {isGeneratingMap
+                ? campaign?.map_image_url
+                  ? "Regenerating Map..."
+                  : "Generating Map..."
+                : campaign?.map_image_url
+                ? "Regenerate Map"
+                : "Generate Map"}
             </button>
-          ) : null}
+          </div>
         </div>
 
         {mapError && (
@@ -174,23 +181,14 @@ export default function Campaign() {
             {mapError}
           </div>
         )}
+        <SlideshowLightbox className="absolute h-1/5 w-1/5 left-10">
+          {campaign?.map_image_url && (
+            <img className="w-full rounded" src={campaign.map_image_url} alt="Campaign Map" />
+          )}
+          {/* Add more images here if you have more URLs */}
+        </SlideshowLightbox>
         <div className="flex flex-col md:flex-row gap-4">
-          {campaign?.map_image_url || mapImage ? (
-            <div className="mb-8 w-full md:w-1/3 sticky h-fit top-0 pt-5">
-              {/* i want to add a clickthrough on the image that opens it in a new tab */}
-              <img
-                src={
-                  campaign?.map_image_url || `data:image/png;base64,${mapImage}`
-                }
-                alt="Generated campaign map"
-                className="cursor-pointer hover:opacity-80 w-full rounded-lg shadow-lg p-1 border-3 bg-ghibli-brown border-emerald-800"
-                onClick={() => {
-                  window.open(campaign?.map_image_url || `data:image/png;base64,${mapImage}`, "_blank");
-                }}
-              />
-            </div>
-          ) : null}
-          <div className="w-full md:w-2/3 pt-5">
+          <div className="w-full pt-5">
             <h1 className="font-cinzel text-4xl md:text-5xl font-bold text-ghibli-forest mb-10 text-center">
               {parsedCampaign.title}
             </h1>
