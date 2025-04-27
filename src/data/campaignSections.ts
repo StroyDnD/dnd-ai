@@ -5,7 +5,7 @@ export interface Prompt {
 }
 
 // Restructured as sections for D&D campaign creation instead of genres
-export const campaignSections = {
+export const campaignSections: Record<string, Prompt[]> = {
   "World Building": [
     {
       id: "environments",
