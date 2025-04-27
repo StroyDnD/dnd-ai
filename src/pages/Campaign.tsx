@@ -1,8 +1,14 @@
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router";
+import { useEffect, useState, useCallback } from "react";
+import { useNavigate, useParams } from "react-router";
 import { useCampaign } from "@/context/CampaignContext";
-import { parseLocations, generateMapTemplate } from "@/lib/templates/mapGenerator";
+import {
+  parseLocations,
+  generateMapTemplate,
+} from "@/lib/templates/mapGenerator";
 import { StoryService } from "@/lib/api";
+import { base64ToFile } from "@/utils/images";
+import supabase from "@/utils/supabase";
+import { useAuth } from "@/providers/AuthProvider";
 
 interface CampaignSection {
   title: string;
@@ -17,62 +23,109 @@ interface ParsedCampaign {
 }
 
 export default function Campaign() {
+  const { user } = useAuth();
   const navigate = useNavigate();
-  const { generatedCampaign, setCurrentSection, setGeneratedCampaign } = useCampaign();
-  const [parsedCampaign, setParsedCampaign] = useState<ParsedCampaign | null>(null);
+  const params = useParams();
+  const { campaign, setCurrentSection, setCampaign } = useCampaign();
+  const [parsedCampaign, setParsedCampaign] = useState<ParsedCampaign | null>(
+    null
+  );
   const [isGeneratingMap, setIsGeneratingMap] = useState(false);
   const [mapError, setMapError] = useState<string | null>(null);
   const [mapImage, setMapImage] = useState<string | null>(null);
-  
+  console.log(mapImage);
   useEffect(() => {
     // Get campaign data from context
-    if (generatedCampaign) {
-      const { title, content } = generatedCampaign;
+    if (campaign) {
+      const { title, content } = campaign;
       const parsed = parseCampaignContent(title, content);
       setParsedCampaign(parsed);
     }
-  }, [generatedCampaign]);
+  }, [campaign]);
 
   const handleBackToEdit = () => {
-    // Clear the generated campaign to prevent immediate redirect
-    setGeneratedCampaign(null);
-    // Navigate back to create-campaign page
     setCurrentSection("World Building");
-    navigate('/create-campaign');
+    navigate(`/campaigns/${params.id}/edit`);
   };
 
   const handleGenerateMaps = async () => {
-    if (!generatedCampaign) return;
-    
+    if (!campaign) return;
+
     try {
       setIsGeneratingMap(true);
       setMapError(null);
-      
+
       // Parse locations from campaign content
-      const locations = parseLocations(generatedCampaign);
+      const locations = parseLocations(campaign);
       if (!locations.length) {
         setMapError("No locations found in campaign content");
         return;
       }
-      
+
       // Generate map template
       const mapTemplate = generateMapTemplate(locations);
-      console.log('mapTemplate', mapTemplate);
-      
+      console.log("mapTemplate", mapTemplate);
+
       // Call the map generation service
       const result = await StoryService.generateMap(mapTemplate);
-      
+
       if (result.illustrations && result.illustrations[0]) {
+        const base64Image = result.illustrations[0];
+        const imageFile = base64ToFile(
+          base64Image,
+          `campaign-${campaign.id}-map.png`
+        );
+        await supabase.storage
+          .from("campaign-maps")
+          .upload(`${user?.id}/${imageFile.name}`, imageFile, {
+            cacheControl: "3600",
+            upsert: false,
+          });
+
+        // Get the public URL
+        const {
+          data: { publicUrl },
+        } = supabase.storage
+          .from("campaign-maps")
+          .getPublicUrl(`${user?.id}/${imageFile.name}`);
+
+        // Store the URL in your campaigns table
+        console.log("publicUrl", publicUrl);
+        console.log("campaign.id", campaign.id);
+        await supabase
+          .from("campaigns")
+          .update({ map_image_url: publicUrl })
+          .eq("id", campaign.id)
+          .select();
         setMapImage(result.illustrations[0]);
       }
-      
     } catch (error) {
       console.error("Error generating map:", error);
-      setMapError(error instanceof Error ? error.message : "Failed to generate map");
+      setMapError(
+        error instanceof Error ? error.message : "Failed to generate map"
+      );
     } finally {
       setIsGeneratingMap(false);
     }
   };
+
+  const fetchCampaign = useCallback(async () => {
+    const { data, error } = await supabase
+      .from("campaigns")
+      .select("*")
+      .eq("id", params.id);
+    if (error) {
+      console.error("Error fetching campaign:", error);
+    } else {
+      setCampaign(data[0]);
+    }
+  }, [params.id, setCampaign]);
+
+  useEffect(() => {
+    if (params.id && !campaign) {
+      fetchCampaign();
+    }
+  }, [params.id, fetchCampaign, campaign]);
 
   if (!parsedCampaign) {
     return (
@@ -88,23 +141,33 @@ export default function Campaign() {
         <div className="mb-8 flex justify-between items-center">
           <button
             onClick={handleBackToEdit}
-            className="flex items-center font-cormorant text-ghibli-brown hover:text-ghibli-forest transition-colors"
+            className="cursor-pointer flex items-center font-cormorant text-ghibli-brown hover:opacity-80 transition-colors"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
-              <path fillRule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clipRule="evenodd" />
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-5 w-5 mr-1"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+            >
+              <path
+                fillRule="evenodd"
+                d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z"
+                clipRule="evenodd"
+              />
             </svg>
             Back to Edit
           </button>
-          
-          <button
-            onClick={handleGenerateMaps}
-            disabled={isGeneratingMap}
-            className={`px-4 py-2 bg-ghibli-forest rounded hover:bg-ghibli-brown transition-colors ${
-              isGeneratingMap ? 'opacity-50 cursor-not-allowed' : ''
-            }`}
-          >
-            {isGeneratingMap ? 'Generating Map...' : 'Generate Maps'}
-          </button>
+          {!campaign?.map_image_url ? (
+            <button
+              onClick={handleGenerateMaps}
+              disabled={isGeneratingMap}
+              className={`px-4 py-2 bg-ghibli-forest rounded hover:bg-ghibli-brown transition-colors ${
+                isGeneratingMap ? "opacity-50 cursor-not-allowed" : ""
+              }`}
+            >
+              {isGeneratingMap ? "Generating Map..." : "Generate Maps"}
+            </button>
+          ) : null}
         </div>
 
         {mapError && (
@@ -112,123 +175,140 @@ export default function Campaign() {
             {mapError}
           </div>
         )}
+        <div className="flex flex-col md:flex-row gap-4">
+          {campaign?.map_image_url || mapImage ? (
+            <div className="mb-8 w-full md:w-1/3 sticky h-fit top-0 pt-5">
+              {/* i want to add a clickthrough on the image that opens it in a new tab */}
+              <img
+                src={
+                  campaign?.map_image_url || `data:image/png;base64,${mapImage}`
+                }
+                alt="Generated campaign map"
+                className="cursor-pointer hover:opacity-80 w-full rounded-lg shadow-lg p-1 border-3 bg-ghibli-brown border-emerald-800"
+                onClick={() => {
+                  window.open(campaign?.map_image_url || `data:image/png;base64,${mapImage}`, "_blank");
+                }}
+              />
+            </div>
+          ) : null}
+          <div className="w-full md:w-2/3 pt-5">
+            <h1 className="font-cinzel text-4xl md:text-5xl font-bold text-ghibli-forest mb-10 text-center">
+              {parsedCampaign.title}
+            </h1>
 
-        {mapImage && (
-          <div className="mb-8">
-            <img 
-              src={`data:image/png;base64,${mapImage}`} 
-              alt="Generated campaign map" 
-              className="w-full rounded-lg shadow-lg"
-            />
-          </div>
-        )}
-        
-        <h1 className="font-cinzel text-4xl md:text-5xl font-bold text-ghibli-forest mb-10 text-center">
-          {parsedCampaign.title}
-        </h1>
+            {parsedCampaign.sections.map((section, index) => (
+              <div key={index} className="mb-8">
+                {section.type === "main" ? (
+                  <h2 className="font-imfell text-2xl md:text-3xl text-ghibli-forest border-b-2 border-ghibli-gold pb-2 mb-4">
+                    {section.title}
+                  </h2>
+                ) : section.type === "sub" ? (
+                  <h3 className="font-playfair text-xl md:text-2xl text-ghibli-brown mt-6 mb-3">
+                    {section.title}
+                  </h3>
+                ) : (
+                  <h4 className="font-cormorant font-semibold text-lg md:text-xl text-ghibli-brown mt-4 mb-2">
+                    {section.title}
+                  </h4>
+                )}
 
-        {parsedCampaign.sections.map((section, index) => (
-          <div key={index} className="mb-8">
-            {section.type === "main" ? (
-              <h2 className="font-imfell text-2xl md:text-3xl text-ghibli-forest border-b-2 border-ghibli-gold pb-2 mb-4">
-                {section.title}
-              </h2>
-            ) : section.type === "sub" ? (
-              <h3 className="font-playfair text-xl md:text-2xl text-ghibli-brown mt-6 mb-3">
-                {section.title}
-              </h3>
-            ) : (
-              <h4 className="font-cormorant font-semibold text-lg md:text-xl text-ghibli-brown mt-4 mb-2">
-                {section.title}
-              </h4>
-            )}
-
-            {section.content.map((paragraph, pidx) => (
-              <p key={`p-${index}-${pidx}`} className="font-cormorant text-lg leading-relaxed mb-4">
-                {paragraph}
-              </p>
-            ))}
-
-            {section.listItems.length > 0 && (
-              <ul className="list-disc pl-6 mb-6 space-y-2">
-                {section.listItems.map((item, iidx) => (
-                  <li key={`li-${index}-${iidx}`} className="font-cormorant text-lg leading-relaxed">
-                    {item}
-                  </li>
+                {section.content.map((paragraph, pidx) => (
+                  <p
+                    key={`p-${index}-${pidx}`}
+                    className="font-cormorant text-lg leading-relaxed mb-4"
+                  >
+                    {paragraph}
+                  </p>
                 ))}
-              </ul>
-            )}
+
+                {section.listItems.length > 0 && (
+                  <ul className="list-disc pl-6 mb-6 space-y-2">
+                    {section.listItems.map((item, iidx) => (
+                      <li
+                        key={`li-${index}-${iidx}`}
+                        className="font-cormorant text-lg leading-relaxed"
+                      >
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            ))}
           </div>
-        ))}
+        </div>
       </div>
     </div>
   );
 }
 
 function parseCampaignContent(title: string, content: string): ParsedCampaign {
-  const lines = content.split('\n').map(line => line.trim()).filter(line => line.length > 0);
+  const lines = content
+    .split("\n")
+    .map((line) => line.trim())
+    .filter((line) => line.length > 0);
   const sections: CampaignSection[] = [];
-  
+
   let currentTitle = "";
   let currentType: "main" | "sub" | "subsub" = "main";
   let currentContent: string[] = [];
   let currentListItems: string[] = [];
-  
+
   // If the first line looks like a title (starting with #), use it as the title
   // Otherwise use the provided title
   let campaignTitle = title;
   let startIndex = 0;
-  
-  if (lines.length > 0 && lines[0].startsWith('# ')) {
-    campaignTitle = lines[0].replace('# ', '');
+
+  if (lines.length > 0 && lines[0].startsWith("# ")) {
+    campaignTitle = lines[0].replace("# ", "");
     startIndex = 1;
   }
-  
+
   const addCurrentSection = () => {
     if (currentTitle) {
       sections.push({
         title: currentTitle,
         type: currentType,
         content: [...currentContent],
-        listItems: [...currentListItems]
+        listItems: [...currentListItems],
       });
       currentContent = [];
       currentListItems = [];
     }
   };
-  
+
   for (let i = startIndex; i < lines.length; i++) {
     const line = lines[i];
-    
+
     // Check for section headers
-    if (line.startsWith('## ')) {
+    if (line.startsWith("## ")) {
       addCurrentSection();
-      currentTitle = line.replace('## ', '');
+      currentTitle = line.replace("## ", "");
       currentType = "main";
-    } else if (line.startsWith('### ')) {
+    } else if (line.startsWith("### ")) {
       addCurrentSection();
-      currentTitle = line.replace('### ', '');
+      currentTitle = line.replace("### ", "");
       currentType = "sub";
-    } else if (line.startsWith('#### ')) {
+    } else if (line.startsWith("#### ")) {
       addCurrentSection();
-      currentTitle = line.replace('#### ', '');
+      currentTitle = line.replace("#### ", "");
       currentType = "subsub";
-    } 
+    }
     // Check for list items
-    else if (line.startsWith('* ') || line.startsWith('- ')) {
+    else if (line.startsWith("* ") || line.startsWith("- ")) {
       currentListItems.push(line.substring(2));
-    } 
+    }
     // Regular paragraph text
     else {
       currentContent.push(line);
     }
   }
-  
+
   // Add the last section
   addCurrentSection();
-  
+
   return {
     title: campaignTitle,
-    sections
+    sections,
   };
-} 
+}

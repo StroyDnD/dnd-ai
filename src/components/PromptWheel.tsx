@@ -1,29 +1,21 @@
 import { useState, ChangeEvent, useEffect, useRef } from "react"
-import { Prompt, campaignSections } from "../data/campaignSections"
+import { Prompt } from "../data/campaignSections"
 import { generateResponseForPrompt } from "@/lib/api/openai";
-
+import { Loader } from "lucide-react";
+import { useCampaign } from "@/context/CampaignContext";
+import { CampaignSection } from "@/context/CampaignContext";
 interface PromptWheelProps {
-  section: keyof typeof campaignSections;
+  section: CampaignSection;
   onAnswersUpdate?: (answers: Record<string, string>) => void;
-  onSectionComplete?: (section: keyof typeof campaignSections) => void;
-  initialAnswers?: Record<string, string>;
+  onSectionComplete?: (section: CampaignSection) => void;
 }
 
-const PromptWheel = ({ section, onAnswersUpdate, onSectionComplete, initialAnswers = {} }: PromptWheelProps) => {
-  const prompts = campaignSections[section]
-  const [currentPromptIndex, setCurrentPromptIndex] = useState(0)
-  const [answers, setAnswers] = useState<Record<string, string>>(initialAnswers)
+const PromptWheel = ({ section, onAnswersUpdate, onSectionComplete }: PromptWheelProps) => {
+  const { answers, updateAnswers, prompts, currentPromptIndex, campaign, setCurrentPromptIndex, promptContext } = useCampaign()
+
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
-
-  // Reset currentPromptIndex to 0 when section changes
-  useEffect(() => {
-    setCurrentPromptIndex(0)
-  }, [section])
-
-  useEffect(() => {
-    setAnswers(initialAnswers);
-  }, [initialAnswers]);
+  const [loadingResponse, setLoadingResponse] = useState(false)
 
   // Focus textarea when currentPromptIndex changes
   useEffect(() => {
@@ -40,7 +32,7 @@ const PromptWheel = ({ section, onAnswersUpdate, onSectionComplete, initialAnswe
           onSectionComplete(section);
         }
       } else {
-        setCurrentPromptIndex((prev) => Math.min(prev + 1, prompts.length - 1))
+        setCurrentPromptIndex(Math.min(currentPromptIndex + 1, prompts.length - 1))
       }
     }
   }
@@ -52,7 +44,7 @@ const PromptWheel = ({ section, onAnswersUpdate, onSectionComplete, initialAnswe
       [currentPromptId]: e.target.value,
     }
     
-    setAnswers(updatedAnswers)
+    updateAnswers(updatedAnswers)
     
     // Notify parent component about the updated answers
     if (onAnswersUpdate) {
@@ -60,8 +52,9 @@ const PromptWheel = ({ section, onAnswersUpdate, onSectionComplete, initialAnswe
     }
   }
 
-  const autoGenerateResponse = async (prompt: Prompt) => {
-    const response = await generateResponseForPrompt(prompt)
+  const autoGenerateResponse = async () => {
+    setLoadingResponse(true)
+    const response = await generateResponseForPrompt(promptContext)
 
     const currentPromptId = prompts[currentPromptIndex].id
     const updatedAnswers = {
@@ -69,7 +62,8 @@ const PromptWheel = ({ section, onAnswersUpdate, onSectionComplete, initialAnswe
       [currentPromptId]: response,
     }
     
-    setAnswers(updatedAnswers)
+    updateAnswers(updatedAnswers)
+    setLoadingResponse(false)
   }
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -154,10 +148,10 @@ const PromptWheel = ({ section, onAnswersUpdate, onSectionComplete, initialAnswe
                         onClick={(e) => {
                           e.stopPropagation()
                           if (currentPromptIndex > 0) {
-                            setCurrentPromptIndex((prev) => prev - 1)
+                            setCurrentPromptIndex(currentPromptIndex - 1)
                           }
                         }}
-                        className={`px-6 py-2 rounded-lg font-medium 
+                        className={`hover:bg-emerald-200 cursor-pointer px-6 py-2 rounded-lg font-medium 
                           ${
                             currentPromptIndex > 0 ? "bg-emerald-100 text-emerald-600 hover:bg-emerald-200" : "hidden"
                           } transition-colors duration-200`}
@@ -170,7 +164,7 @@ const PromptWheel = ({ section, onAnswersUpdate, onSectionComplete, initialAnswe
                           handleNext()
                         }}
                         disabled={!answers[prompt.id]?.trim()}
-                        className={`px-6 py-2 rounded-lg font-medium 
+                        className={`cursor-pointer px-6 py-2 rounded-lg font-medium 
                           ${
                             answers[prompt.id]?.trim()
                               ? "bg-emerald-600 text-white hover:bg-emerald-700"
@@ -180,9 +174,12 @@ const PromptWheel = ({ section, onAnswersUpdate, onSectionComplete, initialAnswe
                         {currentPromptIndex === prompts.length - 1 ? "Complete Section" : "Next"}
                       </button>
                     </div>
-                    <button onClick={() => autoGenerateResponse(prompt)}>
-                      Auto Generate Response
-                    </button>
+                    <div className="relative">
+                      {loadingResponse && <Loader className="w-4 h-4 animate-spin text-emerald-600 absolute -left-6 my-auto top-0 bottom-0" />}
+                      <button disabled={loadingResponse} className="border-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed border cursor-pointer text-emerald-600 hover:bg-emerald-200 px-4 py-2 rounded-lg font-medium transition-colors duration-200" onClick={() => autoGenerateResponse()}>
+                        Auto Generate Response
+                      </button>
+                    </div>
                   </div>
                 </>
               )}
@@ -192,6 +189,12 @@ const PromptWheel = ({ section, onAnswersUpdate, onSectionComplete, initialAnswe
       </div>
     )
   }
+
+  useEffect(() => {
+    if (campaign) {
+      updateAnswers(campaign.prompt_answers)
+    }
+  }, [campaign])
 
   return (
     <div className="min-h-[calc(100vh-4rem)] p-8 flex flex-col items-center">

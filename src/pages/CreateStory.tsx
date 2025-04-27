@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useCallback } from "react";
 import PromptWheel from "@/components/PromptWheel";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Loader, Check, FileText } from "lucide-react";
@@ -8,38 +8,42 @@ import { StoryService } from "@/lib/api";
 import { DndCampaignAnswers } from "@/lib/templates";
 import { cn } from "@/lib/utils";
 import { config, testDndCampaignAnswers } from "@/lib/config";
-import { useNavigate } from "react-router";
+import { useLocation, useNavigate, useParams } from "react-router";
 import { useCampaign, CampaignSection } from "@/context/CampaignContext";
-
+import supabase from "@/utils/supabase";
+import { useAuth } from "@/providers/AuthProvider";
 // Define all sections in order
 const sections = [
-  "World Building", 
-  "Campaign Structure", 
-  "Tone & Themes", 
-  "Player Experience", 
-  "Practical DMing Support"
+  "World Building",
+  "Campaign Structure",
+  "Tone & Themes",
+  "Player Experience",
+  "Practical DMing Support",
 ] as const;
 
 export default function CreateStory() {
   const navigate = useNavigate();
-  
+
   // Use campaign context instead of local state
-  const { 
-    currentSection, 
+  const {
+    currentSection,
     setCurrentSection,
-    answers, 
+    answers,
     updateAnswers,
     completedSections,
     addCompletedSection,
-    generatedCampaign,
-    setGeneratedCampaign
+    setCampaign,
+    campaign,
   } = useCampaign();
-  
+
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showGenerateButton, setShowGenerateButton] = useState(false);
+  const { user } = useAuth();
+  const params = useParams();
+  const location = useLocation();
+  const isEditMode = location.pathname.includes("edit");
   // Flag to track if we should navigate to campaign after generation
-  const shouldNavigate = useRef(false);
 
   // Function to convert testDndCampaignAnswers to the correct format and update context
   const fillTestAnswers = () => {
@@ -48,7 +52,7 @@ export default function CreateStory() {
       levelRange: testDndCampaignAnswers.levelRange ?? "",
       campaignLength: testDndCampaignAnswers.campaignLength ?? "",
       // Convert themes array back to comma-separated string for consistency
-      coreThemes: (testDndCampaignAnswers.themes || []).join(', '),
+      coreThemes: (testDndCampaignAnswers.themes || []).join(", "),
       // Extract values from the setting string and other fields
       setting: testDndCampaignAnswers.setting ?? "",
       coreConflict: testDndCampaignAnswers.coreConflict ?? "",
@@ -78,19 +82,17 @@ export default function CreateStory() {
       sensitiveContent: testDndCampaignAnswers.sensitiveContent ?? "",
       characterDeath: testDndCampaignAnswers.characterDeath ?? "",
     };
-    
+
     // Update answers in context
     updateAnswers(testAnswersRecord);
-    
+
     // Mark all sections as completed
-    sections.forEach(section => 
-      { console.log("adding completed section", section)
-        console.log("completedSections", completedSections)
-        addCompletedSection(section as CampaignSection)});
+    sections.forEach((section) => {
+      console.log("adding completed section", section);
+      console.log("completedSections", completedSections);
+      addCompletedSection(section as CampaignSection);
+    });
   };
-
-  console.log("completedSections END", completedSections)
-
 
   const handleAnswersUpdate = (sectionAnswers: Record<string, string>) => {
     // Update answers in context
@@ -100,7 +102,7 @@ export default function CreateStory() {
   const handleSectionComplete = (section: CampaignSection) => {
     // Add completed section to context
     addCompletedSection(section);
-    
+
     // Move to next section
     const currentIndex = sections.indexOf(section);
     if (currentIndex < sections.length - 1) {
@@ -110,42 +112,35 @@ export default function CreateStory() {
 
   // Show generate button when all sections are completed or in test mode
   useEffect(() => {
-    const allSectionsCompleted = sections.every(section => 
+    const allSectionsCompleted = sections.every((section) =>
       completedSections.includes(section as CampaignSection)
     );
     setShowGenerateButton(allSectionsCompleted);
   }, [completedSections]);
 
-  // Update useEffect to navigate only when campaign was just generated
-  useEffect(() => {
-    if (generatedCampaign && shouldNavigate.current) {
-      shouldNavigate.current = false;
-      navigate('/campaign');
-    }
-  }, [generatedCampaign, navigate]);
-
   const handleGenerateCampaign = async () => {
     if (isGenerating) return; // Prevent multiple clicks
-    
+
     try {
       setIsGenerating(true);
       setError(null);
-      // Set flag to navigate after generation completes
-      shouldNavigate.current = true;
-
       // Extract theme values and convert to array
-      const themesArray = answers.coreThemes ? 
-        answers.coreThemes.split(',').map(theme => theme.trim()) :
-        [];
-      
+      const themesArray = answers.coreThemes
+        ? answers.coreThemes.split(",").map((theme) => theme.trim())
+        : [];
+
       // Create campaign answers object from all collected answers
       const dndAnswers: DndCampaignAnswers = {
         // Campaign Structure section
         levelRange: answers.levelRange || "",
         campaignLength: answers.campaignLength || "",
         // World Building section
-        setting: `${answers.culturalInspiration || ""} with ${answers.environments || ""}. Magic: ${answers.magicLevel || ""}. Tech: ${answers.technologyLevel || ""}`,
-        // Tone & Themes section 
+        setting: `${answers.culturalInspiration || ""} with ${
+          answers.environments || ""
+        }. Magic: ${answers.magicLevel || ""}. Tech: ${
+          answers.technologyLevel || ""
+        }`,
+        // Tone & Themes section
         themes: themesArray,
         // Additional context
         coreConflict: answers.coreConflict || "",
@@ -173,15 +168,36 @@ export default function CreateStory() {
         sensitiveContent: answers.sensitiveContent || "",
         characterDeath: answers.characterDeath || "",
       };
-      
+
       const result = await StoryService.generateDndCampaign(dndAnswers);
-      
-      setGeneratedCampaign({
-        title: result.title || "D&D Campaign",
-        content: result.story,
-      });
+      // upload to supabase
+      // we use upsert and pass in the id to update the campaign if present
+      // if not present, it will create a new campaign
+      const { data, error } = await supabase
+        .from("campaigns")
+        .upsert({
+          id: params.id,
+          title: result.title || "D&D Campaign",
+          content: result.story,
+          user_id: user?.id,
+          prompt_answers: answers,
+        })
+        .select();
+      console.log("data", data);
+
+      if (error) {
+        setError(error.message);
+        console.error("Campaign generation error:", error);
+      } else {
+        const campaign = data[0];
+        // redirect to campaign detail page
+        navigate(`/campaigns/${campaign.id}`);
+        setCampaign(campaign);
+      }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to generate campaign.");
+      setError(
+        err instanceof Error ? err.message : "Failed to generate campaign."
+      );
       console.error("Campaign generation error:", err);
     } finally {
       setIsGenerating(false);
@@ -202,6 +218,25 @@ export default function CreateStory() {
     });
   };
 
+  const fetchCampaign = useCallback(async () => {
+    const { data, error } = await supabase
+      .from("campaigns")
+      .select("*")
+      .eq("id", params.id);
+    if (error) {
+      console.error("Error fetching campaign:", error);
+    } else {
+      setCampaign(data[0]);
+    }
+  }, [params.id, setCampaign]);
+
+  useEffect(() => {
+    // if we are on the edit page, and no cmapaign in state, fetch the campaign
+    if (params.id && !campaign) {
+      fetchCampaign();
+    }
+  }, [params.id, fetchCampaign, campaign]);
+  console.log(answers);
   return (
     <div className="min-h-screen">
       {/* Loading overlay */}
@@ -210,13 +245,15 @@ export default function CreateStory() {
           <div className="bg-white p-6 rounded-lg shadow-xl text-center">
             <Loader className="h-10 w-10 animate-spin mx-auto mb-4 text-emerald-600" />
             <p className="text-lg font-medium">
-              {config.testMode ? "Generating Test Campaign..." : "Generating your campaign..."}
+              {config.testMode
+                ? "Generating Test Campaign..."
+                : "Generating your campaign..."}
             </p>
             <p className="text-sm text-gray-500 mt-2">This may take a moment</p>
           </div>
         </div>
       )}
-      
+
       {/* Full-height background */}
       <div className="relative min-h-screen">
         <div className="absolute inset-0 z-0">
@@ -229,7 +266,7 @@ export default function CreateStory() {
           <div className="absolute inset-0 bg-gradient-to-t from-white/30 via-transparent to-transparent" />
           <div className="absolute inset-0 bg-gradient-to-r from-white/30 via-transparent to-transparent" />
         </div>
-        
+
         {/* Section navigation on top of the background */}
         <div className="relative z-10 pt-4 px-4">
           <div className="max-w-4xl mx-auto">
@@ -238,11 +275,21 @@ export default function CreateStory() {
                 <Button
                   key={section}
                   onClick={() => handleNavigateToSection(section)}
-                  variant={currentSection === section ? "default" : completedSections.includes(section) ? "outline" : "ghost"}
+                  variant={
+                    currentSection === section
+                      ? "default"
+                      : completedSections.includes(section)
+                      ? "outline"
+                      : "ghost"
+                  }
                   className={cn(
                     "rounded-full whitespace-nowrap flex items-center gap-1",
-                    completedSections.includes(section) ? "bg-opacity-90" : "bg-opacity-80",
-                    currentSection === section ? "bg-emerald-600 text-white" : "bg-white/70 text-emerald-900 backdrop-blur-sm hover:bg-white/80"
+                    completedSections.includes(section)
+                      ? "bg-opacity-90"
+                      : "bg-opacity-80",
+                    currentSection === section
+                      ? "bg-emerald-600 text-white"
+                      : "bg-white/70 text-emerald-900 backdrop-blur-sm hover:bg-white/80"
                   )}
                   size="sm"
                   disabled={isGenerating}
@@ -258,7 +305,7 @@ export default function CreateStory() {
             </div>
           </div>
         </div>
-        
+
         {error && (
           <div className="relative z-10 max-w-4xl mx-auto px-4 py-2 mt-4">
             <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
@@ -266,21 +313,36 @@ export default function CreateStory() {
             </div>
           </div>
         )}
-        
+
         {/* Add pointer-events-none to disable interaction with PromptWheel during generation */}
-        <div className={cn("relative z-10", isGenerating ? "pointer-events-none" : "")}>
-          <PromptWheel 
+        <div
+          className={cn(
+            "relative z-10",
+            isGenerating ? "pointer-events-none" : ""
+          )}
+        >
+          <PromptWheel
             section={currentSection}
             onAnswersUpdate={handleAnswersUpdate}
             onSectionComplete={handleSectionComplete}
-            initialAnswers={answers}
           />
         </div>
-        
+        {isEditMode ? (
+          <div className="fixed right-12 top-32 z-50">
+            <Button
+              className="px-4 py-2 text-sm rounded-md border border-gray-400 bg-gray-100 text-gray-800 shadow-sm hover:bg-gray-200 transition-all"
+              onClick={() => navigate(`/campaigns/${params.id}`)}
+              variant="outline"
+              size="sm"
+            >
+              View Campaign
+            </Button>
+          </div>
+        ) : null}
         {/* Floating Dev Button for clearing answers (test mode only) */}
         {config.testMode && (
           <div className="fixed right-12 bottom-32 z-50 flex flex-col gap-3">
-            <Button 
+            <Button
               className="px-4 py-2 text-sm rounded-md border border-red-400 bg-red-100 text-red-800 shadow-sm hover:bg-red-200 transition-all"
               onClick={handleClearAnswers}
               variant="outline"
@@ -288,9 +350,9 @@ export default function CreateStory() {
             >
               Clear Answers (Dev)
             </Button>
-            
+
             {/* New Fill Answers button */}
-            <Button 
+            <Button
               className="px-4 py-2 text-sm rounded-md border border-emerald-400 bg-emerald-100 text-emerald-800 shadow-sm hover:bg-emerald-200 transition-all"
               onClick={fillTestAnswers}
               variant="outline"
@@ -301,19 +363,20 @@ export default function CreateStory() {
             </Button>
           </div>
         )}
-        
+
         {/* Floating Generate Campaign button that appears when all sections are completed or in test mode */}
-        <div 
-          className={cn(
-            "fixed right-12 bottom-12 transform z-50 transition-all duration-300",
-            showGenerateButton ? "translate-x-0 opacity-100" : "translate-x-20 opacity-0"
-          )}
+        <div
+          className={
+            "fixed right-12 bottom-12 transform z-50 transition-all duration-300translate-x-0 opacity-100"
+          }
         >
-          <Button 
+          <Button
             className={cn(
               "px-6 py-6 text-lg rounded-full border border-white shadow-lg hover:shadow-xl transition-all text-white",
               "hover:scale-110 hover:shadow-[0_0_20px_rgba(99,102,241,0.7)] hover:border-opacity-80 transform transition-transform duration-300",
-              isGenerating ? "bg-gradient-to-r from-emerald-600 to-emerald-400 cursor-not-allowed opacity-80" : "bg-gradient-to-r from-emerald-700 to-emerald-400"
+              isGenerating
+                ? "bg-gradient-to-r from-emerald-600 to-emerald-400 cursor-not-allowed opacity-80"
+                : "bg-gradient-to-r from-emerald-700 to-emerald-400"
             )}
             onClick={handleGenerateCampaign}
             disabled={isGenerating}
@@ -321,12 +384,19 @@ export default function CreateStory() {
           >
             {isGenerating ? (
               <>
-                <Loader className="mr-3 h-5 w-5 animate-spin" /> 
-                {config.testMode ? "Generating Test Campaign..." : "Generating..."}
+                <Loader className="mr-3 h-5 w-5 animate-spin" />
+                {config.testMode
+                  ? "Generating Test Campaign..."
+                  : "Generating..."}
               </>
             ) : (
               <>
-                {config.testMode ? "Generate Test Campaign!!" : "Generate Campaign"} <ArrowRight className="ml-3 h-5 w-5" />
+                {isEditMode
+                  ? "Update Campaign"
+                  : config.testMode
+                  ? "Generate Test Campaign!!"
+                  : "Generate Campaign"}{" "}
+                <ArrowRight className="ml-3 h-5 w-5" />
               </>
             )}
           </Button>
