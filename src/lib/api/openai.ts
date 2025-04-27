@@ -2,8 +2,6 @@
  * OpenAI API service
  * Handles interactions with the OpenAI API for story generation
  */
-
-import { Prompt } from "@/data/campaignSections";
 import OpenAI from "openai";
 
 // Initialize OpenAI client
@@ -13,14 +11,13 @@ const openai = new OpenAI({
   dangerouslyAllowBrowser: true, // Only for development - in production, we should proxy through a backend
 });
 
-export const generateResponseForPrompt = async (prompt: Prompt) => {
+export const generateResponseForPrompt = async (payload: string) => {
   const promptInstructions =
     "Respond as if you are the dungeon master for a D&D campaign, but do not address the player. Be concise, no more than 2 sentences.";
-  const promptInput = `${prompt.question} ${prompt.hint}`;
   const response = await openai.responses.create({
     model: "gpt-4o",
     instructions: promptInstructions,
-    input: promptInput,
+    input: payload
   });
 
   return response.output_text;
