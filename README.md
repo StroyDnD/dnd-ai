@@ -24,8 +24,8 @@ A web application that enables Dungeon Masters to create customized D&D campaign
 
 - AI-powered D&D campaign generation (plot, NPCs, locations, encounters)
 - User authentication (Supabase)
-- Campaign saving (future)
-- Map and illustration generation (future)
+- Campaign saving (Supabase)
+- Map and illustration generation (openAI / supabase)
 - Responsive UI with Tailwind CSS
 - Analytics via Posthog
 
