@@ -9,6 +9,7 @@ createRoot(document.getElementById('root')!).render(
     <PostHogProvider
       apiKey={import.meta.env.VITE_PUBLIC_POSTHOG_KEY}
       options={{
+        disable_session_recording: true,
         api_host: "https://us.i.posthog.com",
         debug: import.meta.env.MODE === "development",
       }}
