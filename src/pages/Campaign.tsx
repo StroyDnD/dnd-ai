@@ -33,7 +33,7 @@ export default function Campaign() {
   const [isGeneratingMap, setIsGeneratingMap] = useState(false);
   const [mapError, setMapError] = useState<string | null>(null);
   const [mapImage, setMapImage] = useState<string | null>(null);
-  console.log(mapImage);
+
   useEffect(() => {
     // Get campaign data from context
     if (campaign) {
@@ -64,7 +64,6 @@ export default function Campaign() {
 
       // Generate map template
       const mapTemplate = generateMapTemplate(locations);
-      console.log("mapTemplate", mapTemplate);
 
       // Call the map generation service
       const result = await StoryService.generateMap(mapTemplate);

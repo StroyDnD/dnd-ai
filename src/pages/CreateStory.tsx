@@ -90,8 +90,6 @@ export default function CreateStory() {
 
     // Mark all sections as completed
     sections.forEach((section) => {
-      console.log("adding completed section", section);
-      console.log("completedSections", completedSections);
       addCompletedSection(section as CampaignSection);
     });
   };
