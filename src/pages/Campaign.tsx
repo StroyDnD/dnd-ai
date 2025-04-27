@@ -90,8 +90,6 @@ export default function Campaign() {
           .getPublicUrl(`${user?.id}/${imageFile.name}`);
 
         // Store the URL in your campaigns table
-        console.log("publicUrl", publicUrl);
-        console.log("campaign.id", campaign.id);
         await supabase
           .from("campaigns")
           .update({ map_image_url: publicUrl })
@@ -182,10 +180,9 @@ export default function Campaign() {
           </div>
         )}
         <SlideshowLightbox className="absolute h-1/5 w-1/5 left-10">
-          {campaign?.map_image_url && (
+        {campaign?.map_image_url && (
             <img className="w-full rounded" src={campaign.map_image_url} alt="Campaign Map" />
           )}
-          {/* Add more images here if you have more URLs */}
         </SlideshowLightbox>
         <div className="flex flex-col md:flex-row gap-4">
           <div className="w-full pt-5">
