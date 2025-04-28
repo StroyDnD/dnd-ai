@@ -9,6 +9,12 @@ import { StoryService } from "@/lib/api";
 import { base64ToFile } from "@/utils/images";
 import supabase from "@/utils/supabase";
 import { useAuth } from "@/providers/AuthProvider";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import { parseCampaignContent } from "@/utils/campaignParser.ts";
+import { CampaignContent } from "@/components/CampaignContent.tsx";
+import { ParsedCampaign, CampaignSection } from "@/types/campaign";
+
 import {SlideshowLightbox} from 'lightbox.js-react'
 
 interface CampaignSection {
@@ -28,12 +34,11 @@ export default function Campaign() {
   const navigate = useNavigate();
   const params = useParams();
   const { campaign, setCurrentSection, setCampaign } = useCampaign();
-  const [parsedCampaign, setParsedCampaign] = useState<ParsedCampaign | null>(
-    null
-  );
+  const [parsedCampaign, setParsedCampaign] = useState<ParsedCampaign | null>(null);
   const [isGeneratingMap, setIsGeneratingMap] = useState(false);
   const [mapError, setMapError] = useState<string | null>(null);
   const [mapImage, setMapImage] = useState<string | null>(null);
+  const [activeSection, setActiveSection] = useState<string>("");
 
   useEffect(() => {
     // Get campaign data from context
@@ -41,6 +46,11 @@ export default function Campaign() {
       const { title, content } = campaign;
       const parsed = parseCampaignContent(title, content);
       setParsedCampaign(parsed);
+      // Set initial active section to first main section
+      const firstMainSection = parsed.sections.find((s: CampaignSection) => s.type === "main");
+      if (firstMainSection) {
+        setActiveSection(firstMainSection.title);
+      }
     }
   }, [campaign]);
 
@@ -133,9 +143,12 @@ export default function Campaign() {
     );
   }
 
+  // Get main sections for tabs
+  const mainSections = parsedCampaign.sections.filter(section => section.type === "main");
+
   return (
     <div className="min-h-screen bg-white">
-      <div className="max-w-4xl mx-auto pt-12 px-4 pb-24">
+      <div className="max-w-6xl mx-auto pt-12 px-8 pb-24">
         <div className="mb-8 flex justify-between items-center">
           <button
             onClick={handleBackToEdit}
@@ -184,125 +197,56 @@ export default function Campaign() {
             <img className="w-full rounded" src={campaign.map_image_url} alt="Campaign Map" />
           )}
         </SlideshowLightbox>
-        <div className="flex flex-col md:flex-row gap-4">
-          <div className="w-full pt-5">
+
+        <div className="flex flex-col md:flex-row gap-4 justify-center">
+          {campaign?.map_image_url || mapImage ? (
+            <div className="mb-8 w-full md:w-1/3 sticky h-fit top-0 pt-5">
+              <img
+                src={campaign?.map_image_url || `data:image/png;base64,${mapImage}`}
+                alt="Generated campaign map"
+                className="cursor-pointer hover:opacity-80 w-full rounded-lg shadow-lg p-1 border-3 bg-ghibli-brown border-emerald-800"
+                onClick={() => {
+                  window.open(campaign?.map_image_url || `data:image/png;base64,${mapImage}`, "_blank");
+                }}
+              />
+            </div>
+          ) : null}
+
+          <div className="w-full md:w-2/3 pt-5">
             <h1 className="font-cinzel text-4xl md:text-5xl font-bold text-ghibli-forest mb-10 text-center">
               {parsedCampaign.title}
             </h1>
 
-            {parsedCampaign.sections.map((section, index) => (
-              <div key={index} className="mb-8">
-                {section.type === "main" ? (
-                  <h2 className="font-imfell text-2xl md:text-3xl text-ghibli-forest border-b-2 border-ghibli-gold pb-2 mb-4">
-                    {section.title}
-                  </h2>
-                ) : section.type === "sub" ? (
-                  <h3 className="font-playfair text-xl md:text-2xl text-ghibli-brown mt-6 mb-3">
-                    {section.title}
-                  </h3>
-                ) : (
-                  <h4 className="font-cormorant font-semibold text-lg md:text-xl text-ghibli-brown mt-4 mb-2">
-                    {section.title}
-                  </h4>
-                )}
+            {/* Section Tabs */}
+            <div className="flex flex-wrap py-2 gap-2 justify-center mb-8">
+              {mainSections.map((section) => (
+                <Button
+                  key={section.title}
+                  onClick={() => setActiveSection(section.title)}
+                  variant={activeSection === section.title ? "default" : "outline"}
+                  className={cn(
+                    "rounded-full whitespace-nowrap flex items-center gap-1",
+                    activeSection === section.title
+                      ? "bg-emerald-600 text-white"
+                      : "bg-white/70 text-emerald-900 backdrop-blur-sm hover:bg-white/80"
+                  )}
+                  size="sm"
+                >
+                  {section.title.replace(/^SECTION:\s*/i, "")}
+                </Button>
+              ))}
+            </div>
 
-                {section.content.map((paragraph, pidx) => (
-                  <p
-                    key={`p-${index}-${pidx}`}
-                    className="font-cormorant text-lg leading-relaxed mb-4"
-                  >
-                    {paragraph}
-                  </p>
-                ))}
-
-                {section.listItems.length > 0 && (
-                  <ul className="list-disc pl-6 mb-6 space-y-2">
-                    {section.listItems.map((item, iidx) => (
-                      <li
-                        key={`li-${index}-${iidx}`}
-                        className="font-cormorant text-lg leading-relaxed"
-                      >
-                        {item}
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </div>
-            ))}
+            {/* Content Area */}
+            <div className="bg-white/80 backdrop-blur-sm rounded-lg p-6">
+              <CampaignContent 
+                sections={parsedCampaign.sections}
+                activeSection={activeSection}
+              />
+            </div>
           </div>
         </div>
       </div>
     </div>
   );
-}
-
-function parseCampaignContent(title: string, content: string): ParsedCampaign {
-  const lines = content
-    .split("\n")
-    .map((line) => line.trim())
-    .filter((line) => line.length > 0);
-  const sections: CampaignSection[] = [];
-
-  let currentTitle = "";
-  let currentType: "main" | "sub" | "subsub" = "main";
-  let currentContent: string[] = [];
-  let currentListItems: string[] = [];
-
-  // If the first line looks like a title (starting with #), use it as the title
-  // Otherwise use the provided title
-  let campaignTitle = title;
-  let startIndex = 0;
-
-  if (lines.length > 0 && lines[0].startsWith("# ")) {
-    campaignTitle = lines[0].replace("# ", "");
-    startIndex = 1;
-  }
-
-  const addCurrentSection = () => {
-    if (currentTitle) {
-      sections.push({
-        title: currentTitle,
-        type: currentType,
-        content: [...currentContent],
-        listItems: [...currentListItems],
-      });
-      currentContent = [];
-      currentListItems = [];
-    }
-  };
-
-  for (let i = startIndex; i < lines.length; i++) {
-    const line = lines[i];
-
-    // Check for section headers
-    if (line.startsWith("## ")) {
-      addCurrentSection();
-      currentTitle = line.replace("## ", "");
-      currentType = "main";
-    } else if (line.startsWith("### ")) {
-      addCurrentSection();
-      currentTitle = line.replace("### ", "");
-      currentType = "sub";
-    } else if (line.startsWith("#### ")) {
-      addCurrentSection();
-      currentTitle = line.replace("#### ", "");
-      currentType = "subsub";
-    }
-    // Check for list items
-    else if (line.startsWith("* ") || line.startsWith("- ")) {
-      currentListItems.push(line.substring(2));
-    }
-    // Regular paragraph text
-    else {
-      currentContent.push(line);
-    }
-  }
-
-  // Add the last section
-  addCurrentSection();
-
-  return {
-    title: campaignTitle,
-    sections,
-  };
 }
