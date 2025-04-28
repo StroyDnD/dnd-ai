@@ -14,6 +14,7 @@ import { cn } from "@/lib/utils";
 import { parseCampaignContent } from "@/utils/campaignParser.ts";
 import { CampaignContent } from "@/components/CampaignContent.tsx";
 import { ParsedCampaign, CampaignSection } from "@/types/campaign";
+import campaignBg from "@/images/campaign-bg.jpg";
 
 export default function Campaign() {
   const { user } = useAuth();
@@ -135,12 +136,30 @@ export default function Campaign() {
   const mainSections = parsedCampaign.sections.filter(section => section.type === "main");
 
   return (
-    <div className="min-h-screen bg-white">
-      <div className="max-w-6xl mx-auto pt-12 px-8 pb-24">
+    <div className="min-h-screen bg-white relative">
+      {/* Background image */}
+      <div
+        aria-hidden="true"
+        style={{
+          backgroundImage: `url(${campaignBg})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat',
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          width: '100vw',
+          height: '100vh',
+          zIndex: 0,
+          pointerEvents: 'none',
+        }}
+      />
+      {/* Main content */}
+      <div className="max-w-6xl mx-auto pt-12 px-8 pb-24 relative z-10">
         <div className="mb-8 flex justify-between items-center">
           <button
             onClick={handleBackToEdit}
-            className="cursor-pointer flex items-center font-cormorant text-ghibli-brown hover:opacity-80 transition-colors"
+            className="cursor-pointer flex items-center font-cormorant text-ghibli-gold hover:opacity-80 transition-colors"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -190,7 +209,7 @@ export default function Campaign() {
           ) : null}
 
           <div className="w-full md:w-2/3 pt-5">
-            <h1 className="font-cinzel text-4xl md:text-5xl font-bold text-ghibli-forest mb-10 text-center">
+            <h1 className="font-cinzel text-4xl md:text-5xl font-bold text-ghibli-gold mb-10 text-center">
               {parsedCampaign.title}
             </h1>
 
