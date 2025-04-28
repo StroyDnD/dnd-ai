@@ -17,18 +17,6 @@ import { ParsedCampaign, CampaignSection } from "@/types/campaign";
 
 import {SlideshowLightbox} from 'lightbox.js-react'
 
-interface CampaignSection {
-  title: string;
-  type: "main" | "sub" | "subsub";
-  content: string[];
-  listItems: string[];
-}
-
-interface ParsedCampaign {
-  title: string;
-  sections: CampaignSection[];
-}
-
 export default function Campaign() {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -193,9 +181,9 @@ export default function Campaign() {
           </div>
         )}
         <SlideshowLightbox className="absolute h-1/5 w-1/5 left-10">
-        {campaign?.map_image_url && (
+        {campaign?.map_image_url ? (
             <img className="w-full rounded" src={campaign.map_image_url} alt="Campaign Map" />
-          )}
+          ) : <p>No map available</p>}
         </SlideshowLightbox>
 
         <div className="flex flex-col md:flex-row gap-4 justify-center">
