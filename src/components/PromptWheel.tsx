@@ -1,9 +1,9 @@
 import { useState, ChangeEvent, useEffect, useRef } from "react"
 import { Prompt } from "../data/campaignSections"
-import { generateResponseForPrompt } from "@/lib/api/openai";
 import { Loader } from "lucide-react";
 import { useCampaign } from "@/context/CampaignContext";
 import { CampaignSection } from "@/context/CampaignContext";
+import { autoGeneratePromptAnswer } from "@/lib/responses";
 interface PromptWheelProps {
   section: CampaignSection;
   onAnswersUpdate?: (answers: Record<string, string>) => void;
@@ -53,18 +53,16 @@ const PromptWheel = ({ section, onAnswersUpdate, onSectionComplete }: PromptWhee
   }
 
   const autoGenerateResponse = async () => {
-    setLoadingResponse(true)
-    const response = await generateResponseForPrompt(promptContext)
-
-    const currentPromptId = prompts[currentPromptIndex].id
-    const updatedAnswers = {
-      ...answers,
-      [currentPromptId]: response,
-    }
-    
-    updateAnswers(updatedAnswers)
-    setLoadingResponse(false)
-  }
+    setLoadingResponse(true);
+    const currentPromptId = prompts[currentPromptIndex].id;
+    const updatedAnswers = await autoGeneratePromptAnswer(
+      answers,
+      currentPromptId,
+      promptContext
+    );
+    updateAnswers(updatedAnswers);
+    setLoadingResponse(false);
+  };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     // If Enter is pressed without Shift key, move to next prompt

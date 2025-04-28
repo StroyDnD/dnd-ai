@@ -1,4 +1,4 @@
-
+import { autoGeneratePromptAnswer } from "@/lib/responses"; // <-- Add this import
 import { useState, useEffect, useCallback } from "react";
 import { getFantasySaying } from "@/utils/falso";
 import PromptWheel from "@/components/PromptWheel";
@@ -9,11 +9,13 @@ import createCampaignBackground from "@/images/create-campaign-bg.png";
 import { StoryService } from "@/lib/api";
 import { DndCampaignAnswers } from "@/lib/templates";
 import { cn } from "@/lib/utils";
-import { config, testDndCampaignAnswers } from "@/lib/config";
+import { config } from "@/lib/config";
 import { useLocation, useNavigate, useParams } from "react-router";
 import { useCampaign, CampaignSection } from "@/context/CampaignContext";
 import supabase from "@/utils/supabase";
 import { useAuth } from "@/providers/AuthProvider";
+import { allPrompts } from "@/data/allPrompts"; // <-- Add this import
+
 // Define all sections in order
 const sections = [
   "World Building",
@@ -36,9 +38,11 @@ export default function CreateStory() {
     addCompletedSection,
     setCampaign,
     campaign,
+    promptContext,
   } = useCampaign();
 
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isGeneratingAutofill, setIsGeneratingAutofill] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showGenerateButton, setShowGenerateButton] = useState(false);
   const { user } = useAuth();
@@ -46,52 +50,21 @@ export default function CreateStory() {
   const location = useLocation();
   const isEditMode = location.pathname.includes("edit");
   const [fantasySaying, setFantasySaying] = useState<string>("");
-
-  // Function to convert testDndCampaignAnswers to the correct format and update context
-  const fillTestAnswers = () => {
-    // Convert DndCampaignAnswers to Record<string, string> format
-    const testAnswersRecord: Record<string, string> = {
-      levelRange: testDndCampaignAnswers.levelRange ?? "",
-      campaignLength: testDndCampaignAnswers.campaignLength ?? "",
-      // Convert themes array back to comma-separated string for consistency
-      coreThemes: (testDndCampaignAnswers.themes || []).join(", "),
-      // Extract values from the setting string and other fields
-      setting: testDndCampaignAnswers.setting ?? "",
-      coreConflict: testDndCampaignAnswers.coreConflict ?? "",
-      environments: testDndCampaignAnswers.environments ?? "",
-      culturalInspiration: testDndCampaignAnswers.culturalInspiration ?? "",
-      magicLevel: testDndCampaignAnswers.magicLevel ?? "",
-      technologyLevel: testDndCampaignAnswers.technologyLevel ?? "",
-      storyArcs: testDndCampaignAnswers.storyArcs ?? "",
-      structure: testDndCampaignAnswers.structure ?? "",
-      emotionalTone: testDndCampaignAnswers.emotionalTone ?? "",
-      partyMotivation: testDndCampaignAnswers.partyMotivation ?? "",
-      otherGenres: testDndCampaignAnswers.otherGenres ?? "",
-      moralChoices: testDndCampaignAnswers.moralChoices ?? "",
-      gameplayBalance: testDndCampaignAnswers.gameplayBalance ?? "",
-      characterClasses: testDndCampaignAnswers.characterClasses ?? "",
-      backgrounds: testDndCampaignAnswers.backgrounds ?? "",
-      rewards: testDndCampaignAnswers.rewards ?? "",
-      challengingEncounters: testDndCampaignAnswers.challengingEncounters ?? "",
-      npcDevelopment: testDndCampaignAnswers.npcDevelopment ?? "",
-      locations: testDndCampaignAnswers.locations ?? "",
-      villains: testDndCampaignAnswers.villains ?? "",
-      contingencies: testDndCampaignAnswers.contingencies ?? "",
-      historyLore: testDndCampaignAnswers.historyLore ?? "",
-      religionsDeities: testDndCampaignAnswers.religionsDeities ?? "",
-      majorVillain: testDndCampaignAnswers.majorVillain ?? "",
-      criticalEvents: testDndCampaignAnswers.criticalEvents ?? "",
-      sensitiveContent: testDndCampaignAnswers.sensitiveContent ?? "",
-      characterDeath: testDndCampaignAnswers.characterDeath ?? "",
-    };
-
-    // Update answers in context
-    updateAnswers(testAnswersRecord);
+  
+  // Add this function to generate all answers in dev
+  const autoFillAllAnswers = async (promptContext: string) => {
+    setIsGeneratingAutofill(true);
+    let updated = { ...answers };
+    for (const prompt of allPrompts) {
+      updated = await autoGeneratePromptAnswer(updated, prompt.id, promptContext);
+    }
+    updateAnswers(updated);
 
     // Mark all sections as completed
     sections.forEach((section) => {
       addCompletedSection(section as CampaignSection);
     });
+    setIsGeneratingAutofill(false);
   };
 
   const handleAnswersUpdate = (sectionAnswers: Record<string, string>) => {
@@ -270,6 +243,23 @@ export default function CreateStory() {
         </div>
       )}
 
+      {isGeneratingAutofill && (
+        <div className="fixed inset-0 bg-black/50 z-[100] flex items-center justify-center">
+          <div className="bg-white w-md p-6 rounded-lg shadow-xl text-center">
+            <Loader className="h-10 w-10 animate-spin mx-auto mb-4 text-emerald-600" />
+            <p className="text-lg font-medium">
+              {config.testMode
+                ? "Generating Test Answers..."
+                : "Generating your campaign..."}
+            </p>
+            <p className="text-sm text-gray-500 mt-2">This may take a moment</p>
+            {fantasySaying && (
+              <p className="text-sm text-indigo-700 mt-4 italic break-words">{fantasySaying}</p>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* Full-height background */}
       <div className="relative min-h-screen">
         <div className="absolute inset-0 z-0">
@@ -369,13 +359,13 @@ export default function CreateStory() {
 
             {/* New Fill Answers button */}
             <Button
-              className="px-4 py-2 text-sm rounded-md border border-emerald-400 bg-emerald-100 text-emerald-800 shadow-sm hover:bg-emerald-200 transition-all"
-              onClick={fillTestAnswers}
+              className="px-4 py-2 text-sm rounded-md border border-blue-400 bg-blue-100 text-blue-800 shadow-sm hover:bg-blue-200 transition-all"
+              onClick={async () => await autoFillAllAnswers(promptContext)}
               variant="outline"
               size="sm"
             >
               <FileText className="mr-2 h-4 w-4" />
-              Fill Answers (Dev)
+              Fill ALL Answers (Dev)
             </Button>
           </div>
         )}

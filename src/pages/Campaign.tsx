@@ -16,6 +16,8 @@ import { CampaignContent } from "@/components/CampaignContent.tsx";
 import { ParsedCampaign, CampaignSection } from "@/types/campaign";
 import campaignBg from "@/images/campaign-bg.jpg";
 
+import {SlideshowLightbox} from 'lightbox.js-react'
+
 export default function Campaign() {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -87,8 +89,6 @@ export default function Campaign() {
           .getPublicUrl(`${user?.id}/${imageFile.name}`);
 
         // Store the URL in your campaigns table
-        console.log("publicUrl", publicUrl);
-        console.log("campaign.id", campaign.id);
         await supabase
           .from("campaigns")
           .update({ map_image_url: publicUrl })
@@ -175,7 +175,7 @@ export default function Campaign() {
             </svg>
             Back to Edit
           </button>
-          {!campaign?.map_image_url ? (
+          <div className="flex gap-2">
             <button
               onClick={handleGenerateMaps}
               disabled={isGeneratingMap}
@@ -183,9 +183,15 @@ export default function Campaign() {
                 isGeneratingMap ? "opacity-50 cursor-not-allowed" : ""
               }`}
             >
-              {isGeneratingMap ? "Generating Map..." : "Generate Maps"}
+              {isGeneratingMap
+                ? campaign?.map_image_url
+                  ? "Regenerating Map..."
+                  : "Generating Map..."
+                : campaign?.map_image_url
+                ? "Regenerate Map"
+                : "Generate Map"}
             </button>
-          ) : null}
+          </div>
         </div>
 
         {mapError && (
@@ -194,19 +200,13 @@ export default function Campaign() {
           </div>
         )}
 
+
         <div className="flex flex-col md:flex-row gap-4 justify-center">
           {campaign?.map_image_url || mapImage ? (
-            <div className="mb-8 w-full md:w-1/3 sticky h-fit top-0 pt-5">
-              <img
-                src={campaign?.map_image_url || `data:image/png;base64,${mapImage}`}
-                alt="Generated campaign map"
-                className="cursor-pointer hover:opacity-80 w-full rounded-lg shadow-lg p-1 border-3 bg-ghibli-brown border-emerald-800"
-                onClick={() => {
-                  window.open(campaign?.map_image_url || `data:image/png;base64,${mapImage}`, "_blank");
-                }}
-              />
-            </div>
-          ) : null}
+            <SlideshowLightbox className="h-1/5 w-1/5">
+              <img className="w-full rounded" src={campaign?.map_image_url || `data:image/png;base64,${mapImage}`} alt="Campaign Map" />
+            </SlideshowLightbox>
+          ) : <p>No map available</p>}
 
           <div className="w-full md:w-2/3 pt-5">
             <h1 className="font-cinzel text-4xl md:text-5xl font-bold text-ghibli-gold mb-10 text-center">
