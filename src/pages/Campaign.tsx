@@ -291,7 +291,7 @@ export default function Campaign() {
               {/* Main World Map */}
               {(campaign?.map_image_url || mapImage) && (
                 <div className="mb-6">
-                  <h3 className="font-playfair text-xl text-ghibli-brown mb-2">World Map</h3>
+                  <h3 className="font-playfair text-xl mb-2">World Map</h3>
                   <img
                     src={campaign?.map_image_url || `data:image/png;base64,${mapImage}`}
                     alt="Generated campaign map"
@@ -306,7 +306,7 @@ export default function Campaign() {
               {/* Location Maps (Battle Maps) */}
               {locationMaps.length > 0 && (
                 <div>
-                  <h3 className="font-playfair text-xl text-ghibli-brown mb-2">Location Maps</h3>
+                  <h3 className="font-playfair text-xl mb-2">Location Maps</h3>
                   <div className="space-y-4">
                     {locationMaps.map((locMap) => (
                       <div key={locMap.locationName} className="mb-4">
