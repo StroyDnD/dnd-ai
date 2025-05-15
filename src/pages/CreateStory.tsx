@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from "react";
 import { getFantasySaying } from "@/utils/falso";
 import PromptWheel from "@/components/PromptWheel";
@@ -14,6 +13,7 @@ import { useLocation, useNavigate, useParams } from "react-router";
 import { useCampaign, CampaignSection } from "@/context/CampaignContext";
 import supabase from "@/utils/supabase";
 import { useAuth } from "@/providers/AuthProvider";
+import { base64ToFile } from "@/utils/images";
 // Define all sections in order
 const sections = [
   "World Building",
@@ -170,6 +170,7 @@ export default function CreateStory() {
       };
 
       const result = await StoryService.generateDndCampaign(dndAnswers);
+
       // upload to supabase
       // we use upsert and pass in the id to update the campaign if present
       // if not present, it will create a new campaign
@@ -185,14 +186,47 @@ export default function CreateStory() {
         .select();
       console.log("data", data);
 
+      const campaignId = data?.[0]?.id;
+      
+      const tempImagePrompt = `create a fantasy illustration for a D&D campaign with the following title: ${result.title}. DO NOT add this text to the image. The campaign is about ${result.story}.`;
+      const imageResult = await StoryService.generateCampaignImage(tempImagePrompt);
+      if (imageResult?.illustrations?.[0]) {
+        const base64Image = imageResult.illustrations[0];
+        const imageFile = base64ToFile(base64Image, `campaign-image-${campaignId}.png`);
+        await supabase.storage.from("campaign-images").upload(`${user?.id}/${campaignId}/${imageFile.name}`, imageFile, {
+          cacheControl: "3600",
+          upsert: true,
+        });
+
+        const { data: { publicUrl } } = supabase.storage.from("campaign-images").getPublicUrl(`${user?.id}/${campaignId}/${imageFile.name}`);
+        await supabase
+        .from("campaigns")
+        .update({
+          image_url: publicUrl,
+        })
+        .eq("id", campaignId)
+        .select();
+      }
+
       if (error) {
         setError(error.message);
         console.error("Campaign generation error:", error);
       } else {
-        const campaign = data[0];
-        // redirect to campaign detail page
-        navigate(`/campaigns/${campaign.id}`);
-        setCampaign(campaign);
+        // Fetch the latest campaign data that includes the image_url
+        const { data: updatedCampaignData, error: fetchError } = await supabase
+          .from("campaigns")
+          .select("*")
+          .eq("id", campaignId)
+          .single();
+          
+        if (fetchError) {
+          console.error("Error fetching updated campaign:", fetchError);
+          // Still navigate even if we couldn't fetch the latest data
+          navigate(`/campaigns/${campaignId}`);
+        } else {
+          setCampaign(updatedCampaignData);
+          navigate(`/campaigns/${campaignId}`);
+        }
       }
     } catch (err) {
       setError(

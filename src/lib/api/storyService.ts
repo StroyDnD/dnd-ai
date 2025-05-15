@@ -16,7 +16,7 @@ export interface StoryGenerationInput {
 export interface StoryGenerationResult {
   story: string;
   title?: string; // The title might be extracted from the generated story
-  illustrations?: string[]; // URLs to illustrations (for future use)
+  illustrations?: string[]; 
 }
 
 /**
@@ -91,6 +91,32 @@ export default class StoryService {
       };
     } catch (error) {
       console.error('Error in map generation:', error);
+      throw error;
+    }
+  }
+
+    /**
+   * Generates a main campaign image based on the provided instructions
+   */
+  static async generateCampaignImage(prompt: string): Promise<StoryGenerationResult> {
+    try {
+      const result = await OpenAIService.generateImage({
+        model: "gpt-image-1",
+        prompt,
+      });
+
+      if (!result?.data?.[0]?.b64_json) {
+        throw new Error("No image data received from OpenAI");
+      }
+
+      const image_base64 = result.data[0].b64_json;
+
+      return {
+        story: "Campaign image generated successfully",
+        illustrations: [image_base64]
+      };
+    } catch (error) {
+      console.error('Error in campaign image generation:', error);
       throw error;
     }
   }
