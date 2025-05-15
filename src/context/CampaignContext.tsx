@@ -26,6 +26,7 @@ export type Campaign = {
   title: string;
   content: string;
   map_image_url: string
+  image_url: string
   user_id: string
   prompt_answers: Record<string, string>
 }
