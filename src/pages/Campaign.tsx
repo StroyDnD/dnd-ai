@@ -82,7 +82,7 @@ export default function Campaign() {
         );
         await supabase.storage
           .from("campaign-maps")
-          .upload(`${user?.id}/${imageFile.name}`, imageFile, {
+          .upload(`${user?.id}/${campaign.id}/${imageFile.name}`, imageFile, {
             cacheControl: "3600",
             upsert: false,
           });
@@ -92,7 +92,7 @@ export default function Campaign() {
           data: { publicUrl },
         } = supabase.storage
           .from("campaign-maps")
-          .getPublicUrl(`${user?.id}/${imageFile.name}`);
+          .getPublicUrl(`${user?.id}/${campaign.id}/${imageFile.name}`);
 
         // Store the URL in your campaigns table
         console.log("publicUrl", publicUrl);
