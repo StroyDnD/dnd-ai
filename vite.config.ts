@@ -16,4 +16,7 @@ export default defineConfig({
     environment: "jsdom",
     setupFiles: "./tests/setupTests.ts",
   },
+  server: {
+    allowedHosts: ["devserver-staging--stroy-dnd.netlify.app"],
+  }
 });
