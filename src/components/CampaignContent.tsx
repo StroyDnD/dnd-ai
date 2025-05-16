@@ -1,11 +1,13 @@
 import { CampaignSection } from "@/types/campaign";
+import { Button } from "@/components/ui/button";
 
 interface CampaignContentProps {
   sections: CampaignSection[];
   activeSection: string;
+  onGenerateLocationMap?: (locationName: string) => void;
 }
 
-export function CampaignContent({ sections, activeSection }: CampaignContentProps) {
+export function CampaignContent({ sections, activeSection, onGenerateLocationMap }: CampaignContentProps) {
   // Find the index of the selected main section
   const sectionIdx = sections.findIndex(
     (section) => section.title === activeSection && section.type === "main"
@@ -21,6 +23,9 @@ export function CampaignContent({ sections, activeSection }: CampaignContentProp
     groupedSections.push(section);
   }
 
+  // Check if this is the Main Locations section
+  const isLocationsSection = activeSection.includes("Main Locations");
+
   return (
     <>
       {groupedSections.map((section, index) => (
@@ -30,9 +35,20 @@ export function CampaignContent({ sections, activeSection }: CampaignContentProp
               {section.title}
             </h2>
           ) : section.type === "sub" ? (
-            <h3 className="font-playfair text-xl md:text-2xl text-ghibli-brown mt-6 mb-3">
-              {section.title}
-            </h3>
+            <div className="flex justify-between items-center mt-6 mb-3">
+              <h3 className="font-playfair text-xl md:text-2xl text-ghibli-brown">
+                {section.title}
+              </h3>
+              {isLocationsSection && onGenerateLocationMap && (
+                <Button
+                  onClick={() => onGenerateLocationMap(section.title)}
+                  className="bg-ghibli-forest text-white text-sm px-3 py-1 rounded-lg"
+                  size="sm"
+                >
+                  Generate Map
+                </Button>
+              )}
+            </div>
           ) : (
             <h4 className="font-cormorant font-semibold text-lg md:text-xl text-ghibli-brown mt-4 mb-2">
               {section.title}

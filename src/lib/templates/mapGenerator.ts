@@ -82,4 +82,33 @@ Map Generation Instructions:
 
 The map should be generated as a high-quality image that can be used in the campaign.
 `;
+}
+
+/**
+ * Generates a template for battle map generation based on a single main location
+ */
+export function generateBattleMapTemplate(location: Location): string {
+  return `
+You are an expert cartographer specializing in fantasy battle map creation.
+Create a detailed top-down battle map for D&D based on the following location:
+
+Location: ${location.name}
+Type: ${location.type}
+Description: ${location.description}
+Key Features: ${location.keyFeatures.join(', ')}
+
+Battle Map Generation Instructions:
+- Create a top-down battle map for tabletop RPG use
+- Use a grid overlay suitable for 1-inch miniatures (5ft squares)
+- Include all key features mentioned above
+- Add appropriate terrain, furniture, or objects
+- Use a detailed, colorful style with appropriate lighting
+- Ensure the map is usable for tactical combat
+- Include entrances, exits, and any significant terrain features
+- Add shadows and lighting effects to enhance depth
+- Show objects that could provide cover or difficult terrain
+- Make it clear where characters can interact with the environment
+
+The map should be generated as a high-quality image ready for virtual tabletop use.
+`;
 } 
