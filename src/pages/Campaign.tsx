@@ -287,7 +287,7 @@ export default function Campaign() {
       />
       {/* Main content */}
       <div className="max-w-6xl mx-auto pt-12 px-8 pb-24 relative z-10">
-        <div className="bg-white/70 backdrop-blur-sm rounded-lg p-6">
+        <div className="bg-white/40 backdrop-blur-sm rounded-lg p-6">
           <div className="mb-8 flex justify-between items-center">
             <button
               onClick={handleBackToEdit}
@@ -384,17 +384,19 @@ export default function Campaign() {
                               ""
                             )}
                           </h4>
-                          <img
-                            src={`data:image/png;base64,${locMap.imageBase64}`}
-                            alt={`Map of ${locMap.locationName}`}
-                            className="cursor-pointer hover:opacity-80 w-full rounded-lg shadow-lg p-1 border-3 bg-ghibli-brown border-emerald-800"
-                            onClick={() => {
-                              window.open(
-                                `data:image/png;base64,${locMap.imageBase64}`,
-                                "_blank"
-                              );
-                            }}
-                          />
+                          <SlideshowLightbox>
+                            <img
+                              src={`data:image/png;base64,${locMap.imageBase64}`}
+                              alt={`Map of ${locMap.locationName}`}
+                              className="cursor-pointer hover:opacity-80 w-full rounded-lg shadow-lg p-1 border-3 bg-ghibli-brown border-emerald-800"
+                              onClick={() => {
+                                window.open(
+                                  `data:image/png;base64,${locMap.imageBase64}`,
+                                  "_blank"
+                                );
+                              }}
+                            />
+                          </SlideshowLightbox>
                         </div>
                       ))}
                     </div>
