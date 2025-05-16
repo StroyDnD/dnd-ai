@@ -349,21 +349,23 @@ export default function Campaign() {
                 {(campaign?.map_image_url || mapImage) && (
                   <div className="mb-6">
                     <h3 className="font-playfair text-xl mb-2">World Map</h3>
-                    <img
-                      src={
-                        campaign?.map_image_url ||
-                        `data:image/png;base64,${mapImage}`
-                      }
-                      alt="Generated campaign map"
-                      className="cursor-pointer hover:opacity-80 w-full rounded-lg shadow-lg p-1 border-3 bg-ghibli-brown border-emerald-800"
-                      onClick={() => {
-                        window.open(
+                    <SlideshowLightbox>
+                      <img
+                        src={
                           campaign?.map_image_url ||
-                            `data:image/png;base64,${mapImage}`,
-                          "_blank"
-                        );
-                      }}
-                    />
+                          `data:image/png;base64,${mapImage}`
+                        }
+                        alt="Generated campaign map"
+                        className="cursor-pointer hover:opacity-80 w-full rounded-lg shadow-lg p-1 border-3 bg-ghibli-brown border-emerald-800"
+                        onClick={() => {
+                          window.open(
+                            campaign?.map_image_url ||
+                              `data:image/png;base64,${mapImage}`,
+                            "_blank"
+                          );
+                        }}
+                      />
+                    </SlideshowLightbox>
                   </div>
                 )}
 
