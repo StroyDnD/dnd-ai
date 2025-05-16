@@ -27,6 +27,9 @@
   --color-ghibli-sunset: #E76F51;
   --color-ghibli-brown: #4E342E;
   --color-light-green: #8d9d4f;
+  
+  --shadow-glow-map: 0 0 15px rgba(220, 38, 38, 0.7);
+  --shadow-glow-section-tab: 0 0 15px rgba(16, 185, 129, 0.7);
 }
 
 :root {
@@ -51,3 +54,12 @@
   --card-foreground: 222.2 84% 4.9%;
   --radius: 0.5rem;
 }
+
+@utility shadow-glow-map {
+  box-shadow: var(--shadow-glow-map);
+}
+
+@utility shadow-glow-section-tab {
+  box-shadow: var(--shadow-glow-section-tab);
+}
+

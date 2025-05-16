@@ -42,7 +42,7 @@ export function CampaignContent({ sections, activeSection, onGenerateLocationMap
               {isLocationsSection && onGenerateLocationMap && (
                 <Button
                   onClick={() => onGenerateLocationMap(section.title)}
-                  className="bg-ghibli-forest hover:bg-ghibli-brown text-white text-sm px-3 py-1 rounded"
+                  className="bg-ghibli-forest text-white text-sm px-3 py-1 rounded-lg"
                   size="sm"
                 >
                   Generate Map

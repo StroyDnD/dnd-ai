@@ -16,6 +16,7 @@ import { parseCampaignContent } from "@/utils/campaignParser.ts";
 import { CampaignContent } from "@/components/CampaignContent.tsx";
 import { ParsedCampaign, CampaignSection } from "@/types/campaign";
 import campaignBg from "@/images/campaign-bg.jpg";
+import { Compass } from "lucide-react";
 
 interface LocationMap {
   locationName: string;
@@ -286,7 +287,7 @@ export default function Campaign() {
       />
       {/* Main content */}
       <div className="max-w-6xl mx-auto pt-12 px-8 pb-24 relative z-10">
-        <div className="bg-white/40 backdrop-blur-sm rounded-lg p-6">
+        <div className="bg-white/70 backdrop-blur-sm rounded-lg p-6">
           <div className="mb-8 flex justify-between items-center">
             <button
               onClick={handleBackToEdit}
@@ -310,13 +311,14 @@ export default function Campaign() {
               <button
                 onClick={handleGenerateMaps}
                 disabled={isGeneratingMap}
-                className={`px-4 py-2 bg-ghibli-forest rounded hover:bg-ghibli-brown transition-colors ${
+                className={`flex items-center gap-2 px-5 py-2 bg-ghibli-sunset text-white rounded-lg hover:shadow-glow-map transition-all ${
                   isGeneratingMap ? "opacity-50 cursor-not-allowed" : ""
                 }`}
               >
                 {isGeneratingMap && !currentLocationName
                   ? "Generating Map..."
-                  : "Generate World Map"}
+                  : "Generate Regional Map"}
+                  <Compass />
               </button>
             ) : null}
           </div>
@@ -337,9 +339,11 @@ export default function Campaign() {
           <h1 className="font-cinzel text-4xl md:text-5xl font-bold text-black mb-10 text-center">
             {parsedCampaign.title}
           </h1>
-          <div className="flex flex-col md:flex-row gap-10 justify-center">
+          <div className="flex flex-col md:flex-row gap-10 justify-center p-8">
             {/* World Map or Location Map Display */}
-            {(campaign?.map_image_url || mapImage || locationMaps.length > 0) && (
+            {(campaign?.map_image_url ||
+              mapImage ||
+              locationMaps.length > 0) && (
               <div className="mb-8 w-full md:w-1/3 sticky h-fit top-0 pt-5">
                 {/* Main World Map */}
                 {(campaign?.map_image_url || mapImage) && (
@@ -366,12 +370,17 @@ export default function Campaign() {
                 {/* Location Maps (Battle Maps) */}
                 {locationMaps.length > 0 && (
                   <div>
-                    <h3 className="font-playfair text-xl mb-2">Location Maps</h3>
+                    <h3 className="font-playfair text-xl mb-2">
+                      Location Maps
+                    </h3>
                     <div className="space-y-4">
                       {locationMaps.map((locMap) => (
                         <div key={locMap.locationName} className="mb-4">
                           <h4 className="font-cormorant font-semibold text-lg text-ghibli-brown mb-2">
-                            {locMap.locationName.replace(/^SUBSECTION:\s*/i, "")}
+                            {locMap.locationName.replace(
+                              /^SUBSECTION:\s*/i,
+                              ""
+                            )}
                           </h4>
                           <img
                             src={`data:image/png;base64,${locMap.imageBase64}`}
@@ -392,7 +401,7 @@ export default function Campaign() {
               </div>
             )}
 
-            <div className="w-full md:w-4/5 pt-5">
+            <div className="w-full pt-5">
               {/* Section Tabs */}
               <div className="flex flex-wrap py-2 gap-2 justify-center mb-8">
                 {mainSections.map((section) => (
@@ -405,7 +414,7 @@ export default function Campaign() {
                     className={cn(
                       "rounded-full whitespace-nowrap flex items-center gap-1",
                       activeSection === section.title
-                        ? "bg-emerald-600 text-white"
+                        ? "bg-emerald-600 text-white shadow-glow-section-tab border-1 border-emerald-100/50"
                         : "bg-white/70 text-emerald-900 backdrop-blur-sm hover:bg-white/80"
                     )}
                     size="sm"
