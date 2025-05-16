@@ -21,6 +21,7 @@
     "chromium-bidi": "^4.1.1",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "lightbox.js-react": "^1.4.9",
     "lucide-react": "^0.475.0",
     "openai": "^4.96.0",
     "posthog-js": "^1.236.7",
