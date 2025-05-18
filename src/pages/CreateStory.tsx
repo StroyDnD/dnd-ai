@@ -9,7 +9,7 @@ import createCampaignBackground from "@/images/create-campaign-bg.png";
 import { StoryService } from "@/lib/api";
 import { DndCampaignAnswers } from "@/lib/templates";
 import { cn } from "@/lib/utils";
-import { config } from "@/lib/config";
+import { config, testDndCampaignAnswers } from "@/lib/config";
 import { useLocation, useNavigate, useParams } from "react-router";
 import { useCampaign, CampaignSection } from "@/context/CampaignContext";
 import supabase from "@/utils/supabase";
@@ -82,6 +82,53 @@ export default function CreateStory() {
     if (currentIndex < sections.length - 1) {
       setCurrentSection(sections[currentIndex + 1] as CampaignSection);
     }
+  };
+
+  // Function to convert testDndCampaignAnswers to the correct format and update context
+  const fillTestAnswers = () => {
+    // Convert DndCampaignAnswers to Record<string, string> format
+    const testAnswersRecord: Record<string, string> = {
+      levelRange: testDndCampaignAnswers.levelRange ?? "",
+      campaignLength: testDndCampaignAnswers.campaignLength ?? "",
+      // Convert themes array back to comma-separated string for consistency
+      coreThemes: (testDndCampaignAnswers.themes || []).join(", "),
+      // Extract values from the setting string and other fields
+      setting: testDndCampaignAnswers.setting ?? "",
+      coreConflict: testDndCampaignAnswers.coreConflict ?? "",
+      environments: testDndCampaignAnswers.environments ?? "",
+      culturalInspiration: testDndCampaignAnswers.culturalInspiration ?? "",
+      magicLevel: testDndCampaignAnswers.magicLevel ?? "",
+      technologyLevel: testDndCampaignAnswers.technologyLevel ?? "",
+      storyArcs: testDndCampaignAnswers.storyArcs ?? "",
+      structure: testDndCampaignAnswers.structure ?? "",
+      emotionalTone: testDndCampaignAnswers.emotionalTone ?? "",
+      partyMotivation: testDndCampaignAnswers.partyMotivation ?? "",
+      otherGenres: testDndCampaignAnswers.otherGenres ?? "",
+      moralChoices: testDndCampaignAnswers.moralChoices ?? "",
+      gameplayBalance: testDndCampaignAnswers.gameplayBalance ?? "",
+      characterClasses: testDndCampaignAnswers.characterClasses ?? "",
+      backgrounds: testDndCampaignAnswers.backgrounds ?? "",
+      rewards: testDndCampaignAnswers.rewards ?? "",
+      challengingEncounters: testDndCampaignAnswers.challengingEncounters ?? "",
+      npcDevelopment: testDndCampaignAnswers.npcDevelopment ?? "",
+      locations: testDndCampaignAnswers.locations ?? "",
+      villains: testDndCampaignAnswers.villains ?? "",
+      contingencies: testDndCampaignAnswers.contingencies ?? "",
+      historyLore: testDndCampaignAnswers.historyLore ?? "",
+      religionsDeities: testDndCampaignAnswers.religionsDeities ?? "",
+      majorVillain: testDndCampaignAnswers.majorVillain ?? "",
+      criticalEvents: testDndCampaignAnswers.criticalEvents ?? "",
+      sensitiveContent: testDndCampaignAnswers.sensitiveContent ?? "",
+      characterDeath: testDndCampaignAnswers.characterDeath ?? "",
+    };
+
+    // Update answers in context
+    updateAnswers(testAnswersRecord);
+
+    // Mark all sections as completed
+    sections.forEach((section) => {
+      addCompletedSection(section as CampaignSection);
+    });
   };
 
   // Show generate button when all sections are completed or in test mode
@@ -395,7 +442,9 @@ export default function CreateStory() {
             {/* New Fill Answers button */}
             <Button
               className="px-4 py-2 text-sm rounded-md border border-blue-400 bg-blue-100 text-blue-800 shadow-sm hover:bg-blue-200 transition-all"
-              onClick={async () => await autoFillAllAnswers(promptContext)}
+              // uncomment to use ai to fill all answers
+              // onClick={async () => await autoFillAllAnswers(promptContext)}
+              onClick={fillTestAnswers}
               variant="outline"
               size="sm"
             >
