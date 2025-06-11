@@ -29,6 +29,8 @@ export type Campaign = {
   image_url: string
   user_id: string
   prompt_answers: Record<string, string>
+  pdf_url?: string
+  maps_pdf_url?: string
 }
 
 // Interface for the context value

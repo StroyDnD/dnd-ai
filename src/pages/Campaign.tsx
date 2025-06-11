@@ -16,7 +16,7 @@ import { parseCampaignContent } from "@/utils/campaignParser.ts";
 import { CampaignContent } from "@/components/CampaignContent.tsx";
 import { ParsedCampaign, CampaignSection } from "@/types/campaign";
 import campaignBg from "@/images/campaign-bg.jpg";
-import { Compass } from "lucide-react";
+import { Compass, FileText, Download } from "lucide-react";
 
 interface LocationMap {
   locationName: string;
@@ -42,6 +42,8 @@ export default function Campaign() {
   const [mapImage, setMapImage] = useState<string | null>(null);
   const [locationMaps, setLocationMaps] = useState<LocationMap[]>([]);
   const [activeSection, setActiveSection] = useState<string>("");
+  const [isGeneratingPdfs, setIsGeneratingPdfs] = useState(false);
+  const [pdfError, setPdfError] = useState<string | null>(null);
 
   useEffect(() => {
     // Get campaign data from context
@@ -58,6 +60,7 @@ export default function Campaign() {
       }
     }
   }, [campaign]);
+  
 
   const handleBackToEdit = () => {
     setCurrentSection("World Building");
@@ -234,6 +237,42 @@ export default function Campaign() {
     }
   };
 
+  const handleBuildPdfs = async () => {
+    if (!campaign) return;
+    
+    try {
+      setIsGeneratingPdfs(true);
+      setPdfError(null);
+      
+      console.log("Building PDFs...");
+      const { data, error } = await supabase.functions.invoke("generate-pdfs", {
+        body: { campaignId: params.id }
+      });
+      
+      if (error) {
+        console.error("Error generating PDFs:", error);
+        setPdfError(error.message || "Failed to generate PDFs");
+        return;
+      }
+      
+      console.log("Guide:", data.guideUrl);
+      console.log("Maps:", data.mapsUrl);
+      
+      // Update campaign with new PDF URLs
+      setCampaign({ 
+        ...campaign, 
+        pdf_url: data.guideUrl, 
+        maps_pdf_url: data.mapsUrl 
+      });
+      
+    } catch (error) {
+      console.error("Error in handleBuildPdfs:", error);
+      setPdfError(error instanceof Error ? error.message : "Failed to generate PDFs");
+    } finally {
+      setIsGeneratingPdfs(false);
+    }
+  };
+
   const fetchCampaign = useCallback(async () => {
     const { data, error } = await supabase
       .from("campaigns")
@@ -343,20 +382,35 @@ export default function Campaign() {
               </svg>
               Back to Edit
             </button>
-            {!campaign?.map_image_url ? (
+            <div className="flex gap-2">
+              {!campaign?.map_image_url ? (
+                <button
+                  onClick={handleGenerateMaps}
+                  disabled={isGeneratingMap}
+                  className={`flex items-center gap-2 px-5 py-2 bg-ghibli-sunset text-white rounded-lg hover:shadow-glow-map transition-all ${
+                    isGeneratingMap ? "opacity-50 cursor-not-allowed" : ""
+                  }`}
+                >
+                  {isGeneratingMap && !currentLocationName
+                    ? "Generating Map..."
+                    : "Generate Regional Map"}
+                    <Compass />
+                </button>
+              ) : null}
+              
               <button
-                onClick={handleGenerateMaps}
-                disabled={isGeneratingMap}
-                className={`flex items-center gap-2 px-5 py-2 bg-ghibli-sunset text-white rounded-lg hover:shadow-glow-map transition-all ${
-                  isGeneratingMap ? "opacity-50 cursor-not-allowed" : ""
+                onClick={handleBuildPdfs}
+                disabled={isGeneratingPdfs}
+                className={`flex items-center gap-2 px-5 py-2 bg-emerald-600 text-white rounded-lg hover:shadow-glow-map transition-all ${
+                  isGeneratingPdfs ? "opacity-50 cursor-not-allowed" : ""
                 }`}
               >
-                {isGeneratingMap && !currentLocationName
-                  ? "Generating Map..."
-                  : "Generate Regional Map"}
-                  <Compass />
+                {isGeneratingPdfs 
+                  ? "Generating PDFs..." 
+                  : campaign?.pdf_url ? "Re-build PDFs" : "Build PDFs"}
+                <FileText />
               </button>
-            ) : null}
+            </div>
           </div>
 
           {mapError && (
@@ -365,10 +419,45 @@ export default function Campaign() {
             </div>
           )}
 
+          {pdfError && (
+            <div className="mb-4 p-4 bg-red-100 text-red-700 rounded">
+              {pdfError}
+            </div>
+          )}
+
           {isGeneratingMap && currentLocationName && (
             <div className="mb-4 p-4 bg-blue-100 text-blue-700 rounded">
               Generating map for{" "}
               {currentLocationName.replace(/^SUBSECTION:\s*/i, "")}...
+            </div>
+          )}
+          
+          {/* PDF Download Links */}
+          {(campaign?.pdf_url || campaign?.maps_pdf_url) && (
+            <div className="mb-6 p-4 bg-emerald-50 rounded-lg border border-emerald-100">
+              <h3 className="font-semibold text-emerald-800 mb-2">Download Campaign Files</h3>
+              <div className="flex flex-wrap gap-4">
+                {campaign?.pdf_url && (
+                  <a 
+                    href={campaign.pdf_url} 
+                    download 
+                    className="flex items-center gap-2 px-4 py-2 bg-white rounded-md border border-emerald-200 hover:bg-emerald-50 transition-colors"
+                  >
+                    <Download size={18} />
+                    Campaign Guide PDF
+                  </a>
+                )}
+                {campaign?.maps_pdf_url && (
+                  <a 
+                    href={campaign.maps_pdf_url} 
+                    download
+                    className="flex items-center gap-2 px-4 py-2 bg-white rounded-md border border-emerald-200 hover:bg-emerald-50 transition-colors"
+                  >
+                    <Download size={18} />
+                    Maps PDF
+                  </a>
+                )}
+              </div>
             </div>
           )}
 
