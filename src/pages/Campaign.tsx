@@ -261,7 +261,7 @@ export default function Campaign() {
       // Update campaign with new PDF URLs
       setCampaign({ 
         ...campaign, 
-        pdf_url: data.guideUrl, 
+        campaign_pdf_url: data.guideUrl, 
         maps_pdf_url: data.mapsUrl 
       });
       
@@ -407,7 +407,7 @@ export default function Campaign() {
               >
                 {isGeneratingPdfs 
                   ? "Generating PDFs..." 
-                  : campaign?.pdf_url ? "Re-build PDFs" : "Build PDFs"}
+                  : campaign?.campaign_pdf_url ? "Re-build PDFs" : "Build PDFs"}
                 <FileText />
               </button>
             </div>
@@ -433,13 +433,13 @@ export default function Campaign() {
           )}
           
           {/* PDF Download Links */}
-          {(campaign?.pdf_url || campaign?.maps_pdf_url) && (
+          {(campaign?.campaign_pdf_url || campaign?.maps_pdf_url) && (
             <div className="mb-6 p-4 bg-emerald-50 rounded-lg border border-emerald-100">
               <h3 className="font-semibold text-emerald-800 mb-2">Download Campaign Files</h3>
               <div className="flex flex-wrap gap-4">
-                {campaign?.pdf_url && (
+                {campaign?.maps_pdf_url && (
                   <a 
-                    href={campaign.pdf_url} 
+                    href={campaign.campaign_pdf_url} 
                     download 
                     className="flex items-center gap-2 px-4 py-2 bg-white rounded-md border border-emerald-200 hover:bg-emerald-50 transition-colors"
                   >
