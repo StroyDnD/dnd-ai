@@ -20,6 +20,18 @@ interface LocationMap {
   user_id: string;
 }
 
+interface CampaignSection {
+  title: string;
+  type: "main" | "sub" | "subsub";
+  content: string[];
+  listItems: string[];
+}
+
+interface ParsedCampaign {
+  title: string;
+  sections: CampaignSection[];
+}
+
 interface RequestBody {
   campaignId: string;
 }
@@ -129,8 +141,11 @@ async function buildGuidePdf(supabase, campaign: Campaign): Promise<string> {
   let { width, height } = currentPage.getSize();
   let currentY = height - 60; // Start from top with margin
 
+  // Parse campaign content using same logic as campaignParser
+  const parsedCampaign = parseCampaignContent(campaign.title, campaign.content || '');
+
   // Add title at the top
-  const titleLines = wrapText(campaign.title, helveticaBold, 24, width - 100);
+  const titleLines = wrapText(parsedCampaign.title, helveticaBold, 24, width - 100);
   titleLines.forEach(line => {
     currentPage.drawText(line, {
       x: 50,
@@ -193,38 +208,90 @@ async function buildGuidePdf(supabase, campaign: Campaign): Promise<string> {
     }
   }
 
-  // Start campaign content on a new page
-  if (campaign.content) {
+  // Start campaign content on a new page with parsed sections
+  if (parsedCampaign.sections.length > 0) {
     currentPage = pdfDoc.addPage(PageSizes.A4);
     currentY = height - 60; // Reset to top of new page
 
-    // Split content by newlines to handle paragraphs properly
-    const paragraphs = campaign.content.split('\n').filter(para => para.trim().length > 0);
     const lineHeight = 16;
     
-    for (const paragraph of paragraphs) {
-      const contentLines = wrapText(paragraph.trim(), helveticaFont, 12, width - 100);
-      
-      for (const line of contentLines) {
+    for (const section of parsedCampaign.sections) {
+      // Check if we need a new page for section title
+      if (currentY < 100) {
+        currentPage = pdfDoc.addPage(PageSizes.A4);
+        currentY = height - 60;
+      }
+
+      // Add section title with appropriate font size based on type
+      let titleSize = 16;
+      if (section.type === 'main') titleSize = 18;
+      else if (section.type === 'sub') titleSize = 16;
+      else if (section.type === 'subsub') titleSize = 14;
+
+      const titleLines = wrapText(section.title, helveticaBold, titleSize, width - 100);
+      titleLines.forEach(line => {
+        currentPage.drawText(line, {
+          x: 50,
+          y: currentY,
+          size: titleSize,
+          font: helveticaBold,
+          color: rgb(0, 0, 0),
+        });
+        currentY -= titleSize + 5;
+      });
+
+      currentY -= 10; // Extra space after title
+
+      // Add section content
+      for (const contentLine of section.content) {
+        if (contentLine.trim()) {
+          const contentLines = wrapText(contentLine.trim(), helveticaFont, 12, width - 100);
+          
+          for (const line of contentLines) {
+            // Check if we need a new page
+            if (currentY < 60) {
+              currentPage = pdfDoc.addPage(PageSizes.A4);
+              currentY = height - 60;
+            }
+            
+            currentPage.drawText(line, {
+              x: 50,
+              y: currentY,
+              size: 12,
+              font: helveticaFont,
+              color: rgb(0, 0, 0),
+            });
+            
+            currentY -= lineHeight;
+          }
+        }
+      }
+
+      // Add list items
+      for (const listItem of section.listItems) {
         // Check if we need a new page
         if (currentY < 60) {
           currentPage = pdfDoc.addPage(PageSizes.A4);
           currentY = height - 60;
         }
+
+        const listLines = wrapText(`• ${listItem}`, helveticaFont, 12, width - 120);
         
-        currentPage.drawText(line, {
-          x: 50,
-          y: currentY,
-          size: 12,
-          font: helveticaFont,
-          color: rgb(0, 0, 0),
-        });
-        
-        currentY -= lineHeight;
+        for (const line of listLines) {
+          currentPage.drawText(line, {
+            x: 70, // Indent for list items
+            y: currentY,
+            size: 12,
+            font: helveticaFont,
+            color: rgb(0, 0, 0),
+          });
+          
+          currentY -= lineHeight;
+        }
       }
       
-      // Add extra space between paragraphs
-      currentY -= 8;
+      // Add extra space between sections
+      currentY -= 15;
     }
   }
 
@@ -246,6 +313,81 @@ async function buildGuidePdf(supabase, campaign: Campaign): Promise<string> {
 
   const { data } = supabase.storage.from('campaign-pdfs').getPublicUrl(filePath);
   return data.publicUrl;
+}
+
+// Campaign content parser (same logic as campaignParser.ts)
+function parseCampaignContent(title: string, content: string): ParsedCampaign {
+  const lines = content
+    .split("\n")
+    .map((line) => line.trim())
+    .filter((line) => line.length > 0);
+  const sections: CampaignSection[] = [];
+
+  let currentTitle = "";
+  let currentType: "main" | "sub" | "subsub" = "main";
+  let currentContent: string[] = [];
+  let currentListItems: string[] = [];
+
+  // If the first line looks like a title (starting with #), use it as the title
+  // Otherwise use the provided title
+  let campaignTitle = title;
+  let startIndex = 0;
+
+  if (lines.length > 0 && lines[0].startsWith("# ")) {
+    campaignTitle = lines[0].replace("# ", "");
+    startIndex = 1;
+  }
+
+  const addCurrentSection = () => {
+    if (currentTitle) {
+      sections.push({
+        title: currentTitle
+          .replace(/^SECTION:\s*/i, "")
+          .replace(/^SUBSECTION:\s*/i, "")
+          .trim(),
+        type: currentType,
+        content: [...currentContent],
+        listItems: [...currentListItems],
+      });
+      currentContent = [];
+      currentListItems = [];
+    }
+  };
+
+  for (let i = startIndex; i < lines.length; i++) {
+    const line = lines[i];
+
+    // Check for section headers
+    if (line.startsWith("## ")) {
+      addCurrentSection();
+      currentTitle = line.replace("## ", "");
+      currentType = "main";
+    } else if (line.startsWith("### ")) {
+      addCurrentSection();
+      currentTitle = line.replace("### ", "");
+      currentType = "sub";
+    } else if (line.startsWith("#### ")) {
+      addCurrentSection();
+      currentTitle = line.replace("#### ", "");
+      currentType = "subsub";
+    }
+    // Check for list items
+    else if (line.startsWith("* ") || line.startsWith("- ")) {
+      currentListItems.push(line.substring(2));
+    }
+    // Regular paragraph text
+    else {
+      currentContent.push(line);
+    }
+  }
+
+  // Add the last section
+  addCurrentSection();
+
+  return {
+    title: campaignTitle,
+    sections,
+  };
 }
 
 async function buildMapPdf(supabase, campaign: Campaign, locationMaps: LocationMap[]): Promise<string> {
