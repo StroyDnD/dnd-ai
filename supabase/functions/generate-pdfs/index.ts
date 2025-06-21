@@ -122,34 +122,35 @@ serve(async (req) => {
 
 async function buildGuidePdf(supabase, campaign: Campaign): Promise<string> {
   const pdfDoc = await PDFDocument.create();
-  const helveticaFont = await pdfDoc.embedFont(StandardFonts.Helvetica);
   const helveticaBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+  const helveticaFont = await pdfDoc.embedFont(StandardFonts.Helvetica);
 
-  const titlePage = pdfDoc.addPage(PageSizes.A4);
-  const { width, height } = titlePage.getSize();
+  let currentPage = pdfDoc.addPage(PageSizes.A4);
+  let { width, height } = currentPage.getSize();
+  let currentY = height - 60; // Start from top with margin
 
-  titlePage.drawText(campaign.title, {
-    x: 50,
-    y: height - 150,
-    size: 30,
-    font: helveticaBold,
-    color: rgb(0, 0, 0),
+  // Add title at the top
+  const titleLines = wrapText(campaign.title, helveticaBold, 24, width - 100);
+  titleLines.forEach(line => {
+    currentPage.drawText(line, {
+      x: 50,
+      y: currentY,
+      size: 24,
+      font: helveticaBold,
+      color: rgb(0, 0, 0),
+    });
+    currentY -= 30; // Move down for next line
   });
 
+  currentY -= 20; // Extra space after title
+  
+  // Add image if available - make it fill the rest of the page
   if (campaign.image_url) {
     try {
       const imageResponse = await fetch(campaign.image_url);
       const imageArrayBuffer = await imageResponse.arrayBuffer();
 
-      if (imageArrayBuffer.byteLength > 8 * 1024 * 1024) {
-        titlePage.drawText("(Campaign image too large to embed)", {
-          x: 50,
-          y: height - 200,
-          size: 12,
-          font: helveticaFont,
-          color: rgb(0.5, 0.5, 0.5),
-        });
-      } else {
+      if (imageArrayBuffer.byteLength <= 8 * 1024 * 1024) {
         let pdfImage;
         if (campaign.image_url.toLowerCase().endsWith('.png')) {
           pdfImage = await pdfDoc.embedPng(imageArrayBuffer);
@@ -157,12 +158,34 @@ async function buildGuidePdf(supabase, campaign: Campaign): Promise<string> {
           pdfImage = await pdfDoc.embedJpg(imageArrayBuffer);
         }
 
-        const imgDims = pdfImage.scale(0.5);
-        titlePage.drawImage(pdfImage, {
-          x: (width - imgDims.width) / 2,
-          y: height - 400,
-          width: imgDims.width,
-          height: imgDims.height,
+        // Calculate available space for image - use all remaining space on first page
+        const maxWidth = width - 100;
+        const maxHeight = currentY - 60; // Use all space from current position to bottom margin
+        
+        const imgWidth = pdfImage.width;
+        const imgHeight = pdfImage.height;
+        
+        let finalWidth = imgWidth;
+        let finalHeight = imgHeight;
+        
+        // Scale down if image is too wide
+        if (imgWidth > maxWidth) {
+          finalWidth = maxWidth;
+          finalHeight = (imgHeight * maxWidth) / imgWidth;
+        }
+        
+        // Scale down if image is too tall
+        if (finalHeight > maxHeight) {
+          finalHeight = maxHeight;
+          finalWidth = (imgWidth * maxHeight) / imgHeight;
+        }
+
+        const imageY = currentY - finalHeight;
+        currentPage.drawImage(pdfImage, {
+          x: (width - finalWidth) / 2,
+          y: imageY,
+          width: finalWidth,
+          height: finalHeight,
         });
       }
     } catch (error) {
@@ -170,66 +193,38 @@ async function buildGuidePdf(supabase, campaign: Campaign): Promise<string> {
     }
   }
 
-  const contentPage = pdfDoc.addPage(PageSizes.A4);
-  const margin = 50;
-  const contentWidth = width - margin * 2;
-  let yOffset = height - margin;
-  const sections = campaign.content.split(/(?=SECTION:|SUBSECTION:)/g);
-  let currentPage = contentPage;
+  // Start campaign content on a new page
+  if (campaign.content) {
+    currentPage = pdfDoc.addPage(PageSizes.A4);
+    currentY = height - 60; // Reset to top of new page
 
-  for (const section of sections) {
-    if (yOffset < 100) {
-      currentPage.drawText("(continued on next page)", {
-        x: margin,
-        y: yOffset,
-        size: 12,
-        font: helveticaFont,
-        color: rgb(0.5, 0.5, 0.5),
-      });
-      currentPage = pdfDoc.addPage(PageSizes.A4);
-      yOffset = height - margin;
-    }
-
-    if (section.trim().startsWith("SECTION:")) {
-      const title = section.trim().replace("SECTION:", "").trim();
-      currentPage.drawText(title, {
-        x: margin,
-        y: yOffset,
-        size: 18,
-        font: helveticaBold,
-        color: rgb(0, 0, 0),
-      });
-      yOffset -= 30;
-    } else if (section.trim().startsWith("SUBSECTION:")) {
-      const title = section.trim().replace("SUBSECTION:", "").trim();
-      currentPage.drawText(title, {
-        x: margin,
-        y: yOffset,
-        size: 15,
-        font: helveticaBold,
-        color: rgb(0, 0, 0),
-      });
-      yOffset -= 25;
-    } else {
-      const lines = section.split('\n');
-      for (const line of lines) {
-        const wrappedText = wrapText(line.trim(), helveticaFont, 12, contentWidth);
-        for (const text of wrappedText) {
-          if (yOffset < margin + 15) {
-            currentPage = pdfDoc.addPage(PageSizes.A4);
-            yOffset = height - margin;
-          }
-          currentPage.drawText(text, {
-            x: margin,
-            y: yOffset,
-            size: 12,
-            font: helveticaFont,
-            color: rgb(0, 0, 0),
-          });
-          yOffset -= 20;
+    // Split content by newlines to handle paragraphs properly
+    const paragraphs = campaign.content.split('\n').filter(para => para.trim().length > 0);
+    const lineHeight = 16;
+    
+    for (const paragraph of paragraphs) {
+      const contentLines = wrapText(paragraph.trim(), helveticaFont, 12, width - 100);
+      
+      for (const line of contentLines) {
+        // Check if we need a new page
+        if (currentY < 60) {
+          currentPage = pdfDoc.addPage(PageSizes.A4);
+          currentY = height - 60;
         }
-        yOffset -= 10;
+        
+        currentPage.drawText(line, {
+          x: 50,
+          y: currentY,
+          size: 12,
+          font: helveticaFont,
+          color: rgb(0, 0, 0),
+        });
+        
+        currentY -= lineHeight;
       }
+      
+      // Add extra space between paragraphs
+      currentY -= 8;
     }
   }
 

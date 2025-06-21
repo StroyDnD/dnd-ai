@@ -51,6 +51,7 @@ export default function Campaign() {
       const { title, content } = campaign;
       const parsed = parseCampaignContent(title, content);
       setParsedCampaign(parsed);
+      console.log("parsedCampaign", parsedCampaign)
       // Set initial active section to first main section
       const firstMainSection = parsed.sections.find(
         (s: CampaignSection) => s.type === "main"
@@ -145,7 +146,7 @@ export default function Campaign() {
       const location = allLocations.find(
         (loc) =>
           loc.name.toLowerCase() ===
-          locationName.replace(/^SUBSECTION:\s*/i, "").toLowerCase()
+          locationName.toLowerCase()
       );
 
       if (!location) {
@@ -282,6 +283,7 @@ export default function Campaign() {
       console.error("Error fetching campaign:", error);
     } else {
       setCampaign(data[0]);
+      console.log("campaign title", data[0].title);
     }
   }, [params.id, setCampaign]);
 
@@ -341,6 +343,7 @@ export default function Campaign() {
     (map) => map.locationName === currentLocationName
   );
 
+  console.log("campaign", campaign);
   return (
     <div className="min-h-screen bg-white relative">
       {/* Background image */}
@@ -428,7 +431,7 @@ export default function Campaign() {
           {isGeneratingMap && currentLocationName && (
             <div className="mb-4 p-4 bg-blue-100 text-blue-700 rounded">
               Generating map for{" "}
-              {currentLocationName.replace(/^SUBSECTION:\s*/i, "")}...
+              {currentLocationName}...
             </div>
           )}
           
@@ -504,10 +507,7 @@ export default function Campaign() {
                       {locationMaps.map((locMap) => (
                         <div key={locMap.locationName} className="mb-4">
                           <h4 className="font-cormorant font-semibold text-lg text-ghibli-brown mb-2">
-                            {locMap.locationName.replace(
-                              /^SUBSECTION:\s*/i,
-                              ""
-                            )}
+                            {locMap.locationName}
                           </h4>
                           <SlideshowLightbox>
                             <img
@@ -552,7 +552,7 @@ export default function Campaign() {
                     )}
                     size="sm"
                   >
-                    {section.title.replace(/^SECTION:\s*/i, "")}
+                    {section.title}
                   </Button>
                 ))}
               </div>

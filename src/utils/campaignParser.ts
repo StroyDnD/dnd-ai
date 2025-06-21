@@ -25,7 +25,10 @@ export function parseCampaignContent(title: string, content: string): ParsedCamp
   const addCurrentSection = () => {
     if (currentTitle) {
       sections.push({
-        title: currentTitle,
+        title: currentTitle
+          .replace(/^SECTION:\s*/i, "")
+          .replace(/^SUBSECTION:\s*/i, "")
+          .trim(),
         type: currentType,
         content: [...currentContent],
         listItems: [...currentListItems],
