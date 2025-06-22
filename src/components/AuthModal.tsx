@@ -33,6 +33,13 @@ export const AuthModal = () => {
     }
   };
 
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      handleButtonPress();
+    }
+  };
+
   return (
     <Dialog open={showAuthModal} onOpenChange={setShowAuthModal}>
       <DialogContent className="bg-white border-none">
@@ -50,6 +57,7 @@ export const AuthModal = () => {
               id="email"
               placeholder="Email"
               required
+              onKeyDown={handleKeyDown}
             />
           </div>
           <div className="flex flex-col gap-2">
@@ -61,6 +69,7 @@ export const AuthModal = () => {
               id="password"
               placeholder="Password"
               required
+              onKeyDown={handleKeyDown}
             />
           </div>
           {mode === "register" && (
