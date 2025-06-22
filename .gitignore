@@ -23,6 +23,9 @@ dist-ssr
 *.sln
 *.sw?
 
+# Instructions
+instructions.md
+
 # Environment variables
 .env
 .env.local

@@ -1,0 +1,17 @@
+
+
+{
+  "imports": {
+    "$std/": "https://deno.land/std@0.168.0/",
+    
+    "@supabase/supabase-js": "npm:@supabase/supabase-js@2",
+    
+    "pdf-lib": "https://esm.sh/pdf-lib@1.17.1"
+  },
+  "compilerOptions": {
+    "lib": ["deno.ns"],
+    "strict": true,
+    "skipLibCheck": true
+  }
+}
+
