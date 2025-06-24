@@ -57,11 +57,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         email: newUser.email || '',
       });
       setShowAuthModal(false);
+      navigate('/create-campaign');
     } catch (err) {
       console.error('Login error:');
       throw err;
     } finally {
-      navigate('/create-campaign');
       setAuthLoading(false);
     }
   };
